@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "@/components/providers/Providers";
 
 export const metadata: Metadata = {
-  title: "Joborg AI",
-  description: "AI layer for the Joborg career page monitoring platform",
+  title: {
+    default: "Joborg AI",
+    template: "%s | Joborg AI",
+  },
+  description: "AI-powered interview practice for your next career move",
 };
 
 export default function RootLayout({
@@ -12,8 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className="dark">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

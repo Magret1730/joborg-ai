@@ -1,63 +1,93 @@
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --accent: #2563eb;
-}
+@import "tailwindcss";
+@import "@heroui/react/styles";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --muted: #94a3b8;
-    --accent: #60a5fa;
-  }
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-soft: #1e3a8a;
+
+  --accent: #2dd4bf;
+  --accent-hover: #14b8a6;
+  --accent-soft: #134e4a;
+
+  --bg: #020617;
+  --bg-soft: #0f172a;
+  --surface: #0f172a;
+  --surface-soft: #111827;
+  --surface-hover: #1e293b;
+
+  --sidebar: #020617;
+  --header: #020617;
+
+  --text: #f8fafc;
+  --text-soft: #cbd5e1;
+  --muted: #94a3b8;
+  --muted-light: #64748b;
+
+  --border: #1e293b;
+  --border-strong: #334155;
+
+  --input-bg: #0f172a;
+  --input-border: #334155;
+  --input-text: #f8fafc;
+  --input-placeholder: #64748b;
+
+  --card: #0f172a;
+  --card-border: #1e293b;
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --table-header: #111827;
+  --table-row: #0f172a;
+  --table-row-hover: #1e293b;
+
+  --success: #22c55e;
+  --success-soft: #052e16;
+  --success-text: #86efac;
+
+  --warning: #fbbf24;
+  --warning-soft: #451a03;
+  --warning-text: #fde68a;
+
+  --danger: #f87171;
+  --danger-soft: #450a0a;
+  --danger-text: #fecaca;
+
+  --info: #60a5fa;
+  --info-soft: #172554;
+  --info-text: #bfdbfe;
+
+  --neutral: #94a3b8;
+  --neutral-soft: #1e293b;
+  --neutral-text: #cbd5e1;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
 }
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
-  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
 }
 
-main {
-  margin: 0 auto;
-  max-width: 640px;
-  padding: 4rem 1.5rem;
+.input,
+.textarea {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--input-text);
 }
 
-h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-p {
-  color: var(--muted);
-  margin-bottom: 1rem;
-}
-
-.status {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  margin-top: 1.5rem;
-  padding: 1rem;
-}
-
-.status strong {
-  color: var(--foreground);
-}
-
-.status code {
-  font-family: ui-monospace, monospace;
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--input-placeholder);
 }
