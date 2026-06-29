@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 type NavbarProps = {
   title: string;
@@ -29,6 +30,7 @@ export function Navbar({ title, subtitle, onMenuClick }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <div className="hidden text-right sm:block">
           <p className="text-sm font-medium text-[var(--text)]">Alex Morgan</p>
           <p className="text-xs text-[var(--muted)]">alex@example.com</p>

@@ -15,7 +15,7 @@ export type NavItem = {
 export const navItems: NavItem[] = [
   {
     label: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -30,27 +30,15 @@ export const navItems: NavItem[] = [
   },
   {
     label: "Reports",
-    href: "/history",
+    href: "/reports",
     icon: FileBarChart,
   },
 ];
 
 export function isNavItemActive(pathname: string, item: NavItem): boolean {
-  if (item.label === "Dashboard") {
-    return pathname === "/";
-  }
-
-  if (item.label === "Start Interview") {
-    return pathname === "/start";
-  }
-
-  if (item.label === "History") {
-    return pathname === "/history";
-  }
-
   if (item.label === "Reports") {
-    return pathname.includes("/report");
+    return pathname === "/reports" || pathname.endsWith("/report");
   }
 
-  return pathname.startsWith(item.href);
+  return pathname === item.href;
 }

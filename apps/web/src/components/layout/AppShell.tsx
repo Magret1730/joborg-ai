@@ -7,7 +7,7 @@ import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 
 const pageTitles: Record<string, { title: string; subtitle?: string }> = {
-  "/": {
+  "/dashboard": {
     title: "Dashboard",
     subtitle: "Your interview practice overview",
   },
@@ -18,6 +18,10 @@ const pageTitles: Record<string, { title: string; subtitle?: string }> = {
   "/history": {
     title: "History",
     subtitle: "Review past interview sessions",
+  },
+  "/reports": {
+    title: "Reports",
+    subtitle: "View all completed interview reports",
   },
 };
 

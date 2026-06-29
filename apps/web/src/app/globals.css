@@ -2,6 +2,71 @@
 @import "@heroui/react/styles";
 
 :root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #dbeafe;
+
+  --accent: #14b8a6;
+  --accent-hover: #0f9f92;
+  --accent-soft: #ccfbf1;
+
+  --bg: #f8fafc;
+  --bg-soft: #f1f5f9;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --surface-hover: #f1f5f9;
+
+  --sidebar: #ffffff;
+  --header: #ffffff;
+
+  --text: #0f172a;
+  --text-soft: #334155;
+  --muted: #64748b;
+  --muted-light: #94a3b8;
+
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-text: #0f172a;
+  --input-placeholder: #94a3b8;
+
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  --table-header: #f8fafc;
+  --table-row: #ffffff;
+  --table-row-hover: #f8fafc;
+
+  --success: #22c55e;
+  --success-soft: #dcfce7;
+  --success-text: #15803d;
+
+  --warning: #f59e0b;
+  --warning-soft: #fef3c7;
+  --warning-text: #b45309;
+
+  --danger: #ef4444;
+  --danger-soft: #fee2e2;
+  --danger-text: #dc2626;
+
+  --info: #3b82f6;
+  --info-soft: #dbeafe;
+  --info-text: #1d4ed8;
+
+  --neutral: #64748b;
+  --neutral-soft: #f1f5f9;
+  --neutral-text: #475569;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+.dark {
   --primary: #3b82f6;
   --primary-hover: #2563eb;
   --primary-soft: #1e3a8a;
@@ -59,11 +124,6 @@
   --neutral: #94a3b8;
   --neutral-soft: #1e293b;
   --neutral-text: #cbd5e1;
-
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
 }
 
 * {

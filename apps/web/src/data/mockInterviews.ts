@@ -159,6 +159,16 @@ export function getReportById(id: string): InterviewReport | undefined {
   return mockReports[id];
 }
 
+export function getAllReports(): Array<InterviewReport & { date: string }> {
+  return Object.values(mockReports).map((report) => {
+    const interview = getInterviewById(report.id);
+    return {
+      ...report,
+      date: interview?.date ?? "",
+    };
+  });
+}
+
 export const exampleJobDescription = `We are looking for a Frontend Engineer to build polished, accessible user interfaces for our career platform.
 
 Responsibilities:

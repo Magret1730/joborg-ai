@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Inbox } from "lucide-react";
 import { Button } from "./Button";
 
@@ -6,6 +7,7 @@ type EmptyStateProps = {
   title: string;
   description: string;
   actionLabel?: string;
+  actionHref?: string;
   onAction?: () => void;
   icon?: ReactNode;
 };
@@ -14,6 +16,7 @@ export function EmptyState({
   title,
   description,
   actionLabel,
+  actionHref,
   onAction,
   icon,
 }: EmptyStateProps) {
@@ -24,7 +27,12 @@ export function EmptyState({
       </div>
       <h3 className="text-lg font-semibold text-[var(--text)]">{title}</h3>
       <p className="mt-2 max-w-md text-sm text-[var(--muted)]">{description}</p>
-      {actionLabel && onAction && (
+      {actionLabel && actionHref && (
+        <Link href={actionHref} className="mt-6">
+          <Button>{actionLabel}</Button>
+        </Link>
+      )}
+      {actionLabel && onAction && !actionHref && (
         <Button className="mt-6" onClick={onAction}>
           {actionLabel}
         </Button>
