@@ -1,10 +1,7 @@
-import dotenv from "dotenv";
 import app from "./app.js";
+import { env } from "./config/env.js";
 
-dotenv.config();
-
-const PORT = process.env.PORT ?? 5001;
-
-app.listen(PORT, () => {
-  console.log(`Joborg AI API running on http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`Joborg AI API running on http://localhost:${env.port}`);
+  console.log(`Environment: ${env.nodeEnv}`);
 });
