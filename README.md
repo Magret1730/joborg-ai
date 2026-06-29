@@ -1,0 +1,91 @@
+# Joborg AI
+
+Joborg AI is the AI layer for the Joborg career page monitoring platform. It will provide intelligent features such as page analysis, change summarization, and future Gemini-powered workflows.
+
+This repository is a monorepo that keeps the frontend, backend, and shared code in one place so Joborg AI can be developed independently and integrated into the main Joborg app later.
+
+## Monorepo structure
+
+```
+joborg-ai/
+├── apps/
+│   ├── web/          # Next.js frontend
+│   └── api/          # Express API
+├── packages/
+│   └── shared/       # Shared TypeScript types and helpers
+├── package.json      # Root workspace scripts
+└── README.md
+```
+
+| Path | Purpose |
+|------|---------|
+| `apps/web` | User-facing frontend for Joborg AI |
+| `apps/api` | REST API for Joborg AI features |
+| `packages/shared` | Types and utilities used by both apps |
+
+## Getting started
+
+Install dependencies from the repo root:
+
+```bash
+npm install
+```
+
+Copy the example env files before running locally:
+
+```bash
+cp apps/web/.env.example apps/web/.env.local
+cp apps/api/.env.example apps/api/.env
+```
+
+## Run the frontend
+
+From the repo root:
+
+```bash
+npm run dev:web
+```
+
+Or from `apps/web`:
+
+```bash
+npm run dev
+```
+
+The frontend runs at [http://localhost:3000](http://localhost:3000).
+
+## Run the backend
+
+From the repo root:
+
+```bash
+npm run dev:api
+```
+
+Or from `apps/api`:
+
+```bash
+npm run dev
+```
+
+The API runs at [http://localhost:5001](http://localhost:5001).
+
+Health check: [http://localhost:5001/api/v1/health](http://localhost:5001/api/v1/health)
+
+## Future Joborg integration plan
+
+Joborg AI is being built as a standalone monorepo first so it can move quickly without blocking the main Joborg frontend and backend repos.
+
+Planned integration approach:
+
+1. **Shared contracts** — Keep API shapes and types in `packages/shared` so they can be reused or published when merged into Joborg.
+2. **API alignment** — Use the same `/api/v1` prefix and auth patterns as the main [Joborg backend](https://github.com/Magret1730/joborg-backend) to reduce integration work later.
+3. **Frontend reuse** — Match the main [Joborg frontend](https://github.com/Magret1730/joborg-frontend) stack (Next.js, TypeScript, Tailwind) so UI can be moved or embedded with minimal changes.
+4. **Gradual merge** — Once stable, AI routes and UI can be added to the main Joborg repos or deployed as a linked service that the main app calls.
+
+Database setup, Gemini integration, and production deployment will be added in later tasks.
+
+## Related repos
+
+- [Joborg frontend](https://github.com/Magret1730/joborg-frontend)
+- [Joborg backend](https://github.com/Magret1730/joborg-backend)

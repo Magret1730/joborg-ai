@@ -1,0 +1,16 @@
+{
+  "name": "joborg-ai",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=@joborg-ai/web",
+    "dev:api": "npm run dev --workspace=@joborg-ai/api",
+    "build:web": "npm run build --workspace=@joborg-ai/web",
+    "build:api": "npm run build --workspace=@joborg-ai/api",
+    "build": "npm run build:api && npm run build:web"
+  }
+}
