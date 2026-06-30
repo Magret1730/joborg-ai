@@ -1,20 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FiZap } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { Input, TextArea } from "@heroui/react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Spinner } from "@/components/ui/Spinner";
 import { exampleJobDescription } from "@/data/mockInterviews";
+import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
 
 export default function StartInterviewPage() {
+  const router = useRouter();
   const [jobTitle, setJobTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [jobDescription, setJobDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerate = () => {
-    // Backend integration will be added in a later task.
+  const handleGenerate = async () => {
+    if (!jobDescription.trim()) {
+      toast.error("Job description is required.");
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      const result = await interviewService.generate({
+        title: jobTitle.trim(),
+        companyName: companyName.trim(),
+        jobDescription: jobDescription.trim(),
+      });
+
+      toast.success("Interview created successfully!");
+      router.push(`/interview/${result.interviewId}`);
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to generate interview. Please try again.";
+
+      toast.error(message);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const fillExample = () => {
@@ -27,7 +59,7 @@ export default function StartInterviewPage() {
     <div className="mx-auto max-w-4xl space-y-8">
       <PageHeader
         title="Start Interview"
-        description="Add the role details below. Joborg AI will generate a tailored mock interview once the backend is connected."
+        description="Add the role details below. Joborg AI will generate a tailored mock interview from your job description."
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -43,6 +75,7 @@ export default function StartInterviewPage() {
               placeholder="e.g. Frontend Engineer"
               value={jobTitle}
               onChange={(event) => setJobTitle(event.target.value)}
+              disabled={isGenerating}
             />
           </div>
 
@@ -57,6 +90,7 @@ export default function StartInterviewPage() {
               placeholder="e.g. Stripe"
               value={companyName}
               onChange={(event) => setCompanyName(event.target.value)}
+              disabled={isGenerating}
             />
           </div>
 
@@ -75,16 +109,28 @@ export default function StartInterviewPage() {
               value={jobDescription}
               onChange={(event) => setJobDescription(event.target.value)}
               className="min-h-48"
+              disabled={isGenerating}
             />
           </div>
 
           <Button
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto cursor-pointer"
             onClick={handleGenerate}
-            disabled={!jobTitle || !companyName || !jobDescription}
+            disabled={
+              isGenerating || !jobTitle || !companyName || !jobDescription.trim()
+            }
           >
-            <FiZap size={16} />
-            Generate Interview
+            {isGenerating ? (
+              <>
+                <Spinner size="sm" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FiZap size={16} />
+                Generate Interview
+              </>
+            )}
           </Button>
         </Card>
 
@@ -98,7 +144,12 @@ export default function StartInterviewPage() {
           <pre className="overflow-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-soft)] p-4 text-xs leading-relaxed text-[var(--text-soft)] whitespace-pre-wrap">
             {exampleJobDescription}
           </pre>
-          <Button variant="secondary" onClick={fillExample} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={fillExample}
+            className="w-full cursor-pointer"
+            disabled={isGenerating}
+          >
             Use example
           </Button>
         </Card>

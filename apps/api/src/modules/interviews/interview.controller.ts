@@ -10,12 +10,17 @@ const aiService = new AiService();
 
 export const generateInterview = asyncHandler(
   async (req: Request, res: Response) => {
-    const result = await aiService.generateInterviewQuestions(req.body);
+    const generated = await aiService.generateInterviewQuestions(req.body);
+    const result = await interviewService.createInterviewFromGeneration(
+      req.body,
+      generated,
+    );
 
     sendSuccess({
       res,
-      message: API_MESSAGES.INTERVIEW_GENERATED,
+      message: API_MESSAGES.INTERVIEW_CREATED,
       data: result,
+      statusCode: 201,
     });
   },
 );
@@ -23,19 +28,21 @@ export const generateInterview = asyncHandler(
 export const listInterviews = asyncHandler(
   async (_req: Request, res: Response) => {
     const interviews = await interviewService.listInterviews();
-    res.json(interviews);
+
+    sendSuccess({
+      res,
+      message: "Interviews retrieved successfully",
+      data: interviews,
+    });
   },
 );
 
 export const getInterview = asyncHandler(async (req: Request, res: Response) => {
-  const id = String(req.params.id);
-  const interview = await interviewService.getInterviewById(id);
-  res.json(interview);
-});
+  const interview = await interviewService.getInterviewById(String(req.params.id));
 
-export const createInterview = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const interview = await interviewService.createInterview();
-    res.json(interview);
-  },
-);
+  sendSuccess({
+    res,
+    message: "Interview retrieved successfully",
+    data: interview,
+  });
+});

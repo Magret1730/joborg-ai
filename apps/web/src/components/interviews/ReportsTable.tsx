@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { InterviewReport, InterviewVerdict } from "@/types/interview";
+import type { InterviewVerdict } from "@/types/interview";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -33,7 +33,14 @@ function formatDate(date: string) {
   });
 }
 
-type ReportRow = InterviewReport & { date: string };
+type ReportRow = {
+  id: string;
+  jobTitle: string;
+  company: string;
+  overallScore: number;
+  verdict: InterviewVerdict;
+  date: string;
+};
 
 type ReportsTableProps = {
   reports: ReportRow[];

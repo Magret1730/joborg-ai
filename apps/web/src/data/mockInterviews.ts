@@ -51,7 +51,7 @@ export const mockInterviews: InterviewSummary[] = [
     jobTitle: "UI Engineer",
     company: "Linear",
     score: 68,
-    status: "abandoned",
+    status: "draft",
     date: "2026-06-15",
   },
 ];

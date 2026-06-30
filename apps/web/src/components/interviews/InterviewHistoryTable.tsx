@@ -1,18 +1,18 @@
 import Link from "next/link";
-import type { InterviewStatus, InterviewSummary } from "@/types/interview";
+import type { InterviewListItem, InterviewStatus } from "@/types/interview";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
 const statusStyles: Record<InterviewStatus, string> = {
+  draft: "bg-[var(--surface-hover)] text-[var(--muted)]",
   completed: "bg-[var(--success-soft)] text-[var(--success-text)]",
   in_progress: "bg-[var(--info-soft)] text-[var(--info-text)]",
-  abandoned: "bg-[var(--danger-soft)] text-[var(--danger-text)]",
 };
 
 const statusLabels: Record<InterviewStatus, string> = {
+  draft: "Draft",
   completed: "Completed",
   in_progress: "In Progress",
-  abandoned: "Abandoned",
 };
 
 function formatDate(date: string) {
@@ -24,7 +24,7 @@ function formatDate(date: string) {
 }
 
 type InterviewHistoryTableProps = {
-  interviews: InterviewSummary[];
+  interviews: InterviewListItem[];
 };
 
 export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps) {
@@ -49,13 +49,13 @@ export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps
                 className="border-t border-[var(--border)] bg-[var(--table-row)] transition hover:bg-[var(--table-row-hover)]"
               >
                 <td className="px-4 py-4 font-medium text-[var(--text)]">
-                  {interview.jobTitle}
+                  {interview.title}
                 </td>
                 <td className="px-4 py-4 text-[var(--text-soft)]">
-                  {interview.company}
+                  {interview.companyName ?? "—"}
                 </td>
                 <td className="px-4 py-4 text-[var(--text)]">
-                  {interview.score ?? "—"}
+                  {interview.overallScore ?? "—"}
                 </td>
                 <td className="px-4 py-4">
                   <span
@@ -65,7 +65,7 @@ export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps
                   </span>
                 </td>
                 <td className="px-4 py-4 text-[var(--muted)]">
-                  {formatDate(interview.date)}
+                  {formatDate(interview.createdAt)}
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex gap-2">
@@ -78,7 +78,7 @@ export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps
                     ) : (
                       <Link href={`/interview/${interview.id}`}>
                         <Button variant="secondary" className="px-3 py-1.5 text-xs">
-                          Resume
+                          {interview.status === "draft" ? "Continue" : "View"}
                         </Button>
                       </Link>
                     )}
@@ -96,9 +96,11 @@ export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-[var(--text)]">
-                  {interview.jobTitle}
+                  {interview.title}
                 </p>
-                <p className="text-sm text-[var(--muted)]">{interview.company}</p>
+                <p className="text-sm text-[var(--muted)]">
+                  {interview.companyName ?? "—"}
+                </p>
               </div>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[interview.status]}`}
@@ -107,16 +109,22 @@ export function InterviewHistoryTable({ interviews }: InterviewHistoryTableProps
               </span>
             </div>
             <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-              <span>Score: {interview.score ?? "—"}</span>
-              <span>{formatDate(interview.date)}</span>
+              <span>Score: {interview.overallScore ?? "—"}</span>
+              <span>{formatDate(interview.createdAt)}</span>
             </div>
-            <Link href={
-              interview.status === "completed"
-                ? `/interview/${interview.id}/report`
-                : `/interview/${interview.id}`
-            }>
+            <Link
+              href={
+                interview.status === "completed"
+                  ? `/interview/${interview.id}/report`
+                  : `/interview/${interview.id}`
+              }
+            >
               <Button variant="secondary" className="w-full">
-                {interview.status === "completed" ? "View Report" : "Resume"}
+                {interview.status === "completed"
+                  ? "View Report"
+                  : interview.status === "draft"
+                    ? "Continue"
+                    : "View"}
               </Button>
             </Link>
           </Card>

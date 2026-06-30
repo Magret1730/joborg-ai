@@ -1,47 +1,120 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { FiChevronLeft, FiChevronRight, FiSend } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { TextArea } from "@heroui/react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { FeedbackCard } from "@/components/interviews/FeedbackCard";
 import { QuestionCard } from "@/components/interviews/QuestionCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import {
-  getInterviewById,
-  mockFeedback,
-  mockQuestions,
-} from "@/data/mockInterviews";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
+import type { InterviewDetail } from "@/types/interview";
+
+const statusLabels: Record<string, string> = {
+  draft: "Draft",
+  in_progress: "In Progress",
+  completed: "Completed",
+};
 
 export default function InterviewPage() {
   const params = useParams<{ id: string }>();
   const interviewId = params.id;
-  const interview = getInterviewById(interviewId);
 
+  const [interview, setInterview] = useState<InterviewDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
 
-  const currentQuestion = mockQuestions[currentIndex];
-  const isLastQuestion = currentIndex === mockQuestions.length - 1;
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInterview() {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await interviewService.getById(interviewId);
+
+        if (isMounted) {
+          setInterview(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          const message =
+            err instanceof ApiError
+              ? err.message
+              : "Failed to load interview.";
+
+          setError(message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadInterview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [interviewId]);
+
+  const handleSubmitAnswer = () => {
+    toast.info("Answer evaluation is coming in the next task.");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <LoadingState label="Loading interview..." rows={5} />
+      </div>
+    );
+  }
+
+  if (error || !interview) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <ErrorState
+          title="Interview not found"
+          message={error ?? "This interview could not be loaded."}
+        />
+      </div>
+    );
+  }
+
+  const questions = interview.questions;
+  const currentQuestion = questions[currentIndex];
+  const isLastQuestion = currentIndex === questions.length - 1;
+
+  if (!currentQuestion) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <ErrorState
+          title="No questions found"
+          message="This interview does not have any questions yet."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
-        title={interview?.jobTitle ?? "Mock Interview"}
-        description={
-          interview
-            ? `${interview.company} · Practice session`
-            : "Practice session"
-        }
+        title={interview.title}
+        description={`${interview.companyName ?? "Company"} · ${statusLabels[interview.status] ?? interview.status}`}
       />
 
       <QuestionCard
         questionNumber={currentIndex + 1}
-        totalQuestions={mockQuestions.length}
+        totalQuestions={questions.length}
         type={currentQuestion.type}
         question={currentQuestion.question}
       />
@@ -73,16 +146,16 @@ export default function InterviewPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               variant="secondary"
-              onClick={() => setShowFeedback(true)}
+              onClick={handleSubmitAnswer}
               disabled={!answer.trim()}
             >
               <FiSend size={16} />
-              Submit Answersss
+              Submit Answer
             </Button>
             <Button
               onClick={() =>
                 setCurrentIndex((index) =>
-                  Math.min(index + 1, mockQuestions.length - 1),
+                  Math.min(index + 1, questions.length - 1),
                 )
               }
               disabled={isLastQuestion}
@@ -93,16 +166,6 @@ export default function InterviewPage() {
           </div>
         </div>
       </Card>
-
-      {showFeedback && <FeedbackCard feedback={mockFeedback} />}
-
-      {isLastQuestion && (
-        <div className="flex justify-end">
-          <Link href={`/interview/${interviewId}/report`}>
-            <Button>View Report</Button>
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
