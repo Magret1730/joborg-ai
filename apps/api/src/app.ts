@@ -1,18 +1,26 @@
 import cors from "cors";
 import express from "express";
-import { createHealthCheckResponse } from "@joborg-ai/shared";
+import { env } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { notFound } from "./middleware/notFound.js";
+import { requestLogger } from "./middleware/requestLogger.js";
+import healthRoutes from "./modules/health/health.routes.js";
+import interviewRoutes from "./modules/interviews/interview.routes.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ?? "http://localhost:3000",
+    origin: env.clientUrl,
   }),
 );
 app.use(express.json());
+app.use(requestLogger);
 
-app.get("/api/v1/health", (_req, res) => {
-  res.json(createHealthCheckResponse("joborg-ai-api"));
-});
+app.use("/api/v1", healthRoutes);
+app.use("/api/v1/interviews", interviewRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;

@@ -1,0 +1,97 @@
+export type InterviewStatus = "draft" | "in_progress" | "completed";
+
+export type QuestionType =
+  | "technical"
+  | "behavioral"
+  | "situational"
+  | "problem_solving"
+  | "communication"
+  | "system_design";
+
+export type InterviewVerdict = "ready" | "almost_ready" | "needs_practice";
+
+export interface InterviewQuestion {
+  id: string;
+  question: string;
+  type: QuestionType;
+  difficulty?: string;
+  goodAnswerHints?: string[];
+}
+
+export interface InterviewListItem {
+  id: string;
+  title: string;
+  companyName: string | null;
+  status: InterviewStatus;
+  overallScore: number | null;
+  createdAt: string;
+  updatedAt: string;
+  questionCount: number;
+  answeredCount: number;
+}
+
+export interface InterviewDetail {
+  id: string;
+  title: string;
+  companyName: string | null;
+  jobDescription: string;
+  questions: InterviewQuestion[];
+  status: InterviewStatus;
+  overallScore: number | null;
+  finalReport: unknown | null;
+  answers: unknown[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GenerateInterviewInput {
+  title: string;
+  companyName: string;
+  jobDescription: string;
+}
+
+export interface GenerateInterviewResponse {
+  interviewId: string;
+  interviewTitle: string;
+  companyName: string;
+  status: InterviewStatus;
+  questions: InterviewQuestion[];
+}
+
+/** @deprecated Use InterviewListItem for API-backed lists */
+export interface InterviewSummary {
+  id: string;
+  jobTitle: string;
+  company: string;
+  score: number | null;
+  status: InterviewStatus;
+  date: string;
+}
+
+export interface InterviewFeedback {
+  summary: string;
+  score: number;
+  tips: string[];
+}
+
+export interface InterviewReport {
+  id: string;
+  jobTitle: string;
+  company: string;
+  overallScore: number;
+  technical: number;
+  communication: number;
+  problemSolving: number;
+  readiness: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  verdict: InterviewVerdict;
+}
+
+export interface DashboardStats {
+  interviewsCompleted: number;
+  averageScore: number;
+  readinessScore: number;
+  lastInterview: string;
+}

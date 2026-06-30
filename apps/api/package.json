@@ -6,19 +6,27 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:migrate": "NODE_OPTIONS='--import tsx' knex migrate:latest --knexfile knexfile.ts --env development",
+    "db:rollback": "NODE_OPTIONS='--import tsx' knex migrate:rollback --knexfile knexfile.ts --env development",
+    "db:latest": "NODE_OPTIONS='--import tsx' knex migrate:latest --knexfile knexfile.ts --env development",
+    "db:status": "NODE_OPTIONS='--import tsx' knex migrate:status --knexfile knexfile.ts --env development"
   },
   "dependencies": {
-    "@joborg-ai/shared": "*",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1"
-  },
-  "devDependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.15.0",
-    "tsx": "^4.22.4",
-    "typescript": "^5.8.3"
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "knex": "^3.1.0",
+    "pg": "^8.16.0",
+    "typescript": "^5.8.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "tsx": "^4.22.4"
   }
 }
