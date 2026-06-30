@@ -1,11 +1,11 @@
-import type { Interview } from "./interview.types.js";
+import type { InterviewRecord } from "./interview.types.js";
 
 export class InterviewRepository {
-  async findAll(): Promise<Interview[]> {
+  async findAll(): Promise<InterviewRecord[]> {
     return [];
   }
 
-  async findById(_id: string): Promise<Interview | null> {
+  async findById(_id: string): Promise<InterviewRecord | null> {
     return null;
   }
 }

@@ -72,6 +72,73 @@ The API runs at [http://localhost:5001](http://localhost:5001).
 
 Health check: [http://localhost:5001/api/v1/health](http://localhost:5001/api/v1/health)
 
+Database health check: [http://localhost:5001/api/v1/health/db](http://localhost:5001/api/v1/health/db)
+
+## Database (Neon PostgreSQL)
+
+Joborg AI uses [Neon](https://neon.tech) as hosted PostgreSQL with [Knex](https://knexjs.org) for migrations and queries.
+
+### Configure `DATABASE_URL`
+
+1. Create a Neon project and database.
+2. Copy the PostgreSQL connection string from the Neon dashboard.
+3. Add it to `apps/api/.env`:
+
+```bash
+DATABASE_URL=postgresql://username:password@host/database?sslmode=require
+```
+
+Neon connection strings usually include `sslmode=require`. SSL is enabled automatically for Neon URLs.
+
+### Run migrations
+
+From the repo root:
+
+```bash
+npm run db:migrate
+```
+
+Or from `apps/api`:
+
+```bash
+npm run db:migrate
+```
+
+Other useful commands:
+
+```bash
+npm run db:status    # check migration status
+npm run db:rollback  # rollback latest migration batch
+```
+
+### Test the database connection
+
+1. Start the API:
+
+```bash
+npm run dev:api
+```
+
+2. Check database health:
+
+```bash
+curl http://localhost:5001/api/v1/health/db
+```
+
+Expected response:
+
+```json
+{
+  "success": true,
+  "message": "Database connection healthy",
+  "data": {
+    "database": "connected"
+  }
+}
+```
+
+If `DATABASE_URL` is missing, the route returns a clean error response.
+
 ## Future Joborg integration plan
 
 Joborg AI is being built as a standalone monorepo first so it can move quickly without blocking the main Joborg frontend and backend repos.
@@ -83,7 +150,7 @@ Planned integration approach:
 3. **Frontend reuse** — Match the main [Joborg frontend](https://github.com/Magret1730/joborg-frontend) stack (Next.js, TypeScript, Tailwind) so UI can be moved or embedded with minimal changes.
 4. **Gradual merge** — Once stable, AI routes and UI can be added to the main Joborg repos or deployed as a linked service that the main app calls.
 
-Database setup, Gemini integration, and production deployment will be added in later tasks.
+Gemini integration and production deployment will be added in later tasks.
 
 ## Related repos
 

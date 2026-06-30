@@ -9,8 +9,11 @@
   "scripts": {
     "dev:web": "npm run dev --workspace=@joborg-ai/web",
     "dev:api": "npm run dev --workspace=@joborg-ai/api",
+    "build:shared": "npm run build --workspace=@joborg-ai/shared",
     "build:web": "npm run build --workspace=@joborg-ai/web",
     "build:api": "npm run build --workspace=@joborg-ai/api",
-    "build": "npm run build:api && npm run build:web"
+    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "db:migrate": "npm run db:migrate --workspace=@joborg-ai/api",
+    "db:rollback": "npm run db:rollback --workspace=@joborg-ai/api"
   }
 }
