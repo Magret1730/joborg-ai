@@ -67,7 +67,7 @@ export default function InterviewPage() {
             disabled={currentIndex === 0}
           >
             <ChevronLeft size={16} />
-            Previouss
+            Previous
           </Button>
 
           <div className="flex flex-col gap-3 sm:flex-row">
