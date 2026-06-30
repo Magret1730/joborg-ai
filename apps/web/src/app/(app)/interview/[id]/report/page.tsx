@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { FiArrowLeft, FiRotateCcw } from "react-icons/fi";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ScoreCard } from "@/components/interviews/ScoreCard";
 import { Button } from "@/components/ui/Button";
@@ -135,13 +135,13 @@ export default async function ReportPage({ params }: ReportPageProps) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <Link href="/start">
           <Button className="w-full sm:w-auto">
-            <RotateCcw size={16} />
+            <FiRotateCcw size={16} />
             Start another interview
           </Button>
         </Link>
         <Link href="/history">
           <Button variant="secondary" className="w-full sm:w-auto">
-            <ArrowLeft size={16} />
+            <FiArrowLeft size={16} />
             Back to history
           </Button>
         </Link>

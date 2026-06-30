@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wand2 } from "lucide-react";
+import { FiZap } from "react-icons/fi";
 import { Input, TextArea } from "@heroui/react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -83,7 +83,7 @@ export default function StartInterviewPage() {
             onClick={handleGenerate}
             disabled={!jobTitle || !companyName || !jobDescription}
           >
-            <Wand2 size={16} />
+            <FiZap size={16} />
             Generate Interview
           </Button>
         </Card>

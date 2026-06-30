@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays } from "lucide-react";
+import { FiArrowRight, FiCalendar } from "react-icons/fi";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard } from "@/components/interviews/ScoreCard";
 import { InterviewHistoryTable } from "@/components/interviews/InterviewHistoryTable";
@@ -19,7 +19,7 @@ export default function DashboardPage() {
           <Link href="/start">
             <Button>
               Start Interview
-              <ArrowRight size={16} />
+              <FiArrowRight size={16} />
             </Button>
           </Link>
         }
@@ -45,7 +45,7 @@ export default function DashboardPage() {
           <Link href="/start" className="shrink-0">
             <Button className="w-full sm:w-auto">
               Start Interview
-              <ArrowRight size={16} />
+              <FiArrowRight size={16} />
             </Button>
           </Link>
         </div>
@@ -91,7 +91,7 @@ export default function DashboardPage() {
           <InterviewHistoryTable interviews={recentInterviews} />
         ) : (
           <Card padding="lg" className="text-center">
-            <CalendarDays
+            <FiCalendar
               size={28}
               className="mx-auto mb-3 text-[var(--accent)]"
             />

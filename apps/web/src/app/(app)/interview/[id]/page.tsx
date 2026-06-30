@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Send } from "lucide-react";
+import { FiChevronLeft, FiChevronRight, FiSend } from "react-icons/fi";
 import { TextArea } from "@heroui/react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FeedbackCard } from "@/components/interviews/FeedbackCard";
@@ -66,7 +66,7 @@ export default function InterviewPage() {
             onClick={() => setCurrentIndex((index) => Math.max(index - 1, 0))}
             disabled={currentIndex === 0}
           >
-            <ChevronLeft size={16} />
+            <FiChevronLeft size={16} />
             Previous
           </Button>
 
@@ -76,7 +76,7 @@ export default function InterviewPage() {
               onClick={() => setShowFeedback(true)}
               disabled={!answer.trim()}
             >
-              <Send size={16} />
+              <FiSend size={16} />
               Submit Answersss
             </Button>
             <Button
@@ -88,7 +88,7 @@ export default function InterviewPage() {
               disabled={isLastQuestion}
             >
               Next
-              <ChevronRight size={16} />
+              <FiChevronRight size={16} />
             </Button>
           </div>
         </div>

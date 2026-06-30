@@ -1,4 +1,4 @@
-import { Lightbulb } from "lucide-react";
+import { FiZap } from "react-icons/fi";
 import type { InterviewFeedback } from "@/types/interview";
 import { Card } from "@/components/ui/Card";
 
@@ -11,7 +11,7 @@ export function FeedbackCard({ feedback }: FeedbackCardProps) {
     <Card padding="lg" className="space-y-4 border-[var(--accent-soft)]">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Lightbulb size={18} className="text-[var(--accent)]" />
+          <FiZap size={18} className="text-[var(--accent)]" />
           <h3 className="text-lg font-semibold text-[var(--text)]">
             Mock Feedback
           </h3>

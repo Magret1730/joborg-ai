@@ -17,5 +17,6 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   clientUrl: requireEnv("CLIENT_URL", "http://localhost:3000"),
   databaseUrl: process.env.DATABASE_URL,
+  geminiApiKey: process.env.GEMINI_API_KEY,
   isProduction: (process.env.NODE_ENV ?? "development") === "production",
 };

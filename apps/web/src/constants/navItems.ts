@@ -1,37 +1,37 @@
+import type { IconType } from "react-icons";
 import {
-  LayoutDashboard,
-  Mic,
-  History,
-  FileBarChart,
-  type LucideIcon,
-} from "lucide-react";
+  FiBarChart2,
+  FiClock,
+  FiGrid,
+  FiMic,
+} from "react-icons/fi";
 
 export type NavItem = {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: IconType;
 };
 
 export const navItems: NavItem[] = [
   {
     label: "Dashboard",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: FiGrid,
   },
   {
     label: "Start Interview",
     href: "/start",
-    icon: Mic,
+    icon: FiMic,
   },
   {
     label: "History",
     href: "/history",
-    icon: History,
+    icon: FiClock,
   },
   {
     label: "Reports",
     href: "/reports",
-    icon: FileBarChart,
+    icon: FiBarChart2,
   },
 ];
 

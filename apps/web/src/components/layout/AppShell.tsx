@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
+import { FiX } from "react-icons/fi";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 
@@ -86,7 +86,7 @@ export function AppShell({ children }: AppShellProps) {
                 className="absolute right-3 top-5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--card)] text-[var(--text)]"
                 aria-label="Close menu"
               >
-                <X size={16} />
+                <FiX size={16} />
               </button>
             </div>
           </div>

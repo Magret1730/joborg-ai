@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { FiStar } from "react-icons/fi";
 
 type PageHeaderProps = {
   title: string;
@@ -12,7 +12,7 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Sparkles size={18} className="text-[var(--accent)]" />
+          <FiStar size={18} className="text-[var(--accent)]" />
           <h1 className="text-2xl font-bold tracking-tight text-[var(--text)] sm:text-3xl">
             {title}
           </h1>

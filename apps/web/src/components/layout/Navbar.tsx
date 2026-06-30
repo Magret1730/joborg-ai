@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { FiMenu } from "react-icons/fi";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 type NavbarProps = {
@@ -19,7 +19,7 @@ export function Navbar({ title, subtitle, onMenuClick }: NavbarProps) {
           className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--primary)] hover:text-[var(--primary)] lg:hidden"
           aria-label="Open navigation menu"
         >
-          <Menu size={18} />
+          <FiMenu size={18} />
         </button>
         <div>
           <h2 className="text-lg font-semibold text-[var(--text)]">{title}</h2>

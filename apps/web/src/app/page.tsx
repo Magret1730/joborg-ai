@@ -1,37 +1,44 @@
 import Link from "next/link";
 import {
-  ArrowRight,
-  BarChart3,
-  Brain,
-  ClipboardList,
-  History,
-  Sparkles,
-} from "lucide-react";
+  FiArrowRight,
+  FiBarChart2,
+  FiCalendar,
+  FiChevronLeft,
+  FiChevronRight,
+  FiClipboard,
+  FiCpu,
+  FiGrid,
+  FiHelpCircle,
+  FiMic,
+  FiSend,
+  FiStar,
+  FiZap,
+} from "react-icons/fi";
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
 const features = [
   {
-    icon: Brain,
+    icon: FiCpu,
     title: "Generate tailored interview questions",
     description:
       "Paste a job description and get realistic questions matched to the role, seniority, and skills.",
   },
   {
-    icon: Sparkles,
+    icon: FiStar,
     title: "Get AI-powered answer feedback",
     description:
       "Receive instant feedback on clarity, structure, and technical depth after each answer.",
   },
   {
-    icon: BarChart3,
+    icon: FiBarChart2,
     title: "Receive a readiness report",
     description:
       "See scores across technical, communication, and problem-solving with actionable recommendations.",
   },
   {
-    icon: History,
+    icon: FiCalendar,
     title: "Save interview history",
     description:
       "Track past sessions, compare progress, and revisit reports before your next interview.",
@@ -80,7 +87,7 @@ export default function LandingPage() {
               <Link href="/start">
                 <Button className="w-full sm:w-auto">
                   Start Interview
-                  <ArrowRight size={16} />
+                  <FiArrowRight size={16} />
                 </Button>
               </Link>
               <Link href="/dashboard">
@@ -160,7 +167,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl space-y-3">
               <div className="flex items-center gap-2 text-[var(--accent)]">
-                <ClipboardList size={18} />
+                <FiClipboard size={18} />
                 <p className="text-sm font-medium uppercase tracking-wide">
                   Future Joborg integration
                 </p>
@@ -194,7 +201,7 @@ export default function LandingPage() {
             <Link href="/start">
               <Button className="w-full sm:w-auto">
                 Start Interview
-                <ArrowRight size={16} />
+                <FiArrowRight size={16} />
               </Button>
             </Link>
             <Link href="/dashboard">
