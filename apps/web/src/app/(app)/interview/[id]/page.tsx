@@ -77,7 +77,7 @@ export default function InterviewPage() {
               disabled={!answer.trim()}
             >
               <Send size={16} />
-              Submit Answer
+              Submit Answersss
             </Button>
             <Button
               onClick={() =>
