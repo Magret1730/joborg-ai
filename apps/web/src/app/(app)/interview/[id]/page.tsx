@@ -15,8 +15,8 @@ import { QuestionNavigator } from "@/components/interviews/QuestionNavigator";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type {
   AnswerFeedback,
   InterviewDetail,
@@ -126,12 +126,12 @@ export default function InterviewPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load interview.";
-
-          setError(message);
+          setError(
+            getFriendlyErrorMessage(
+              err,
+              "We couldn't load this interview. Please try again in a moment.",
+            ),
+          );
         }
       } finally {
         if (isMounted) {
@@ -230,14 +230,15 @@ export default function InterviewPage() {
         toastId: `answer-evaluated-${interviewId}-${currentIndex}`,
       });
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to evaluate answer. Please try again.";
-
-      toast.error(message, {
-        toastId: `answer-error-${interviewId}-${currentIndex}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't evaluate your answer. Please try again in a moment.",
+        ),
+        {
+          toastId: `answer-error-${interviewId}-${currentIndex}`,
+        },
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -270,14 +271,15 @@ export default function InterviewPage() {
       });
       router.push(`/interview/${interviewId}/report`);
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to generate final report. Please try again.";
-
-      toast.error(message, {
-        toastId: `generate-report-error-${interviewId}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't generate your final report. Please try again in a moment.",
+        ),
+        {
+          toastId: `generate-report-error-${interviewId}`,
+        },
+      );
     } finally {
       setIsGeneratingReport(false);
     }

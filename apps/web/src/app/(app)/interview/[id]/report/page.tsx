@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { parseFinalReport } from "@/lib/finalReport";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type { FinalReportResponse, InterviewDetail } from "@/types/interview";
 
 export default function ReportPage() {
@@ -41,12 +41,12 @@ export default function ReportPage() {
       setInterview(data);
       setReport(parseFinalReport(data.finalReport));
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to load interview report.";
-
-      setError(message);
+      setError(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't load this report. Please try again in a moment.",
+        ),
+      );
       setInterview(null);
       setReport(null);
     } finally {
@@ -84,14 +84,15 @@ export default function ReportPage() {
         { toastId: `final-report-${interviewId}` },
       );
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to generate final report. Please try again.";
-
-      toast.error(message, {
-        toastId: `final-report-error-${interviewId}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't generate your final report. Please try again in a moment.",
+        ),
+        {
+          toastId: `final-report-error-${interviewId}`,
+        },
+      );
     } finally {
       setIsGenerating(false);
     }

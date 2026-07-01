@@ -20,7 +20,11 @@ export function ErrorState({
   homeHref = "/",
 }: ErrorStateProps) {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center px-4 py-12">
+    <div
+      className="flex min-h-[50vh] items-center justify-center px-4 py-12"
+      role="alert"
+      aria-live="assertive"
+    >
       <div className="w-full max-w-lg rounded-[var(--radius-lg)] border border-[var(--card-border)] bg-[var(--card)] p-8 text-center shadow-[var(--card-shadow)]">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--danger-soft)] text-[var(--danger)]">
           <FiAlertCircle size={22} />
@@ -35,14 +39,14 @@ export function ErrorState({
               {retryLabel}
             </Button>
           )}
-          <Link href={dashboardHref}>
+          <Link href={dashboardHref} className="cursor-pointer">
             <Button variant="secondary" className="w-full sm:w-auto">
-              Back to dashboard
+              Back to Dashboard
             </Button>
           </Link>
-          <Link href={homeHref}>
+          <Link href={homeHref} className="cursor-pointer">
             <Button variant="ghost" className="w-full sm:w-auto">
-              Go home
+              Go Home
             </Button>
           </Link>
         </div>

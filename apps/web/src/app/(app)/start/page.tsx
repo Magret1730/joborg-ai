@@ -9,9 +9,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
-import { exampleJobDescription } from "@/data/mockInterviews";
+import { exampleJobDescription } from "@/constants/exampleJobDescription";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 
 export default function StartInterviewPage() {
   const router = useRouter();
@@ -38,12 +38,12 @@ export default function StartInterviewPage() {
       toast.success("Interview created successfully!");
       router.push(`/interview/${result.interviewId}`);
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "Failed to generate interview. Please try again.";
-
-      toast.error(message);
+      toast.error(
+        getFriendlyErrorMessage(
+          error,
+          "We couldn't generate your interview. Please try again in a moment.",
+        ),
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -76,6 +76,7 @@ export default function StartInterviewPage() {
               value={jobTitle}
               onChange={(event) => setJobTitle(event.target.value)}
               disabled={isGenerating}
+              aria-required="true"
             />
           </div>
 
@@ -91,6 +92,7 @@ export default function StartInterviewPage() {
               value={companyName}
               onChange={(event) => setCompanyName(event.target.value)}
               disabled={isGenerating}
+              aria-required="true"
             />
           </div>
 
@@ -110,7 +112,13 @@ export default function StartInterviewPage() {
               onChange={(event) => setJobDescription(event.target.value)}
               className="min-h-48"
               disabled={isGenerating}
+              aria-required="true"
+              aria-describedby="job-description-hint"
             />
+            <p id="job-description-hint" className="text-xs text-[var(--muted)]">
+              Joborg AI uses this description to generate tailored interview
+              questions.
+            </p>
           </div>
 
           <Button

@@ -17,8 +17,8 @@ import {
   DropdownPopover,
   DropdownTrigger,
 } from "@heroui/react";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type { InterviewListItem } from "@/types/interview";
 
 type MenuPlacement = "top end" | "top start" | "bottom end" | "bottom start";
@@ -88,14 +88,15 @@ export function InterviewActionsMenu({
       );
       await onRefresh?.();
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to generate final report. Please try again.";
-
-      toast.error(message, {
-        toastId: `generate-report-history-error-${interview.id}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't generate the final report. Please try again in a moment.",
+        ),
+        {
+          toastId: `generate-report-history-error-${interview.id}`,
+        },
+      );
     } finally {
       setIsGenerating(false);
     }

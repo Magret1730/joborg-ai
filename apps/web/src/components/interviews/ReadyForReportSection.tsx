@@ -17,14 +17,17 @@ export function ReadyForReportSection({
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-labelledby="ready-for-report-heading">
       <div>
-        <h2 className="text-xl font-semibold text-[var(--text)]">
-          Ready for report
+        <h2
+          id="ready-for-report-heading"
+          className="text-xl font-semibold text-[var(--text)]"
+        >
+          Ready for Report
         </h2>
         <p className="text-sm text-[var(--muted)]">
-          These interviews have all questions answered and are waiting for final
-          report generation.
+          These interviews have all questions answered and are waiting for a
+          final report.
         </p>
       </div>
 
@@ -45,15 +48,23 @@ export function ReadyForReportSection({
               )}
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Link href={`/interview/${interview.id}`} className="cursor-pointer">
+              <Link
+                href={`/interview/${interview.id}`}
+                className="cursor-pointer"
+              >
                 <Button variant="secondary" className="w-full sm:w-auto">
-                  Review interview
+                  Continue Interview
                 </Button>
               </Link>
-              <Button disabled className="w-full cursor-not-allowed sm:w-auto">
-                <FiFileText size={16} />
-                Generate report (coming soon)
-              </Button>
+              <Link
+                href={`/interview/${interview.id}/report`}
+                className="cursor-pointer"
+              >
+                <Button className="w-full sm:w-auto">
+                  <FiFileText size={16} />
+                  Generate Report
+                </Button>
+              </Link>
             </div>
           </Card>
         ))}

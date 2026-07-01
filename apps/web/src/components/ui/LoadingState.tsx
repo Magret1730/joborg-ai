@@ -7,7 +7,7 @@ type LoadingStateProps = {
 
 export function LoadingState({ rows = 3, label = "Loading..." }: LoadingStateProps) {
   return (
-    <Card className="space-y-4" padding="md">
+    <Card className="space-y-4" padding="md" aria-busy="true" aria-live="polite">
       <p className="text-sm text-[var(--muted)]">{label}</p>
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, index) => (

@@ -101,6 +101,7 @@ export class InterviewRepository {
 
   async createInterview(input: CreateInterviewInput): Promise<InterviewRecord> {
     try {
+      // TODO(Auth): Set user_id from authenticated Joborg user.
       const [record] = await this.db("interviews")
         .insert({
           title: input.interviewTitle,

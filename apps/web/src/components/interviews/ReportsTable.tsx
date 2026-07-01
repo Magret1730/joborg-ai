@@ -1,25 +1,7 @@
 import Link from "next/link";
-import type { InterviewVerdict } from "@/types/interview";
+import { getScoreLevel, scoreLevelConfig } from "@/lib/scoreUtils";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-
-const verdictStyles: Record<
-  InterviewVerdict,
-  { label: string; className: string }
-> = {
-  ready: {
-    label: "Interview Ready",
-    className: "bg-[var(--success-soft)] text-[var(--success-text)]",
-  },
-  almost_ready: {
-    label: "Almost Ready",
-    className: "bg-[var(--info-soft)] text-[var(--info-text)]",
-  },
-  needs_practice: {
-    label: "Needs Practice",
-    className: "bg-[var(--warning-soft)] text-[var(--warning-text)]",
-  },
-};
 
 function formatDate(date: string) {
   if (!date) {
@@ -38,7 +20,6 @@ type ReportRow = {
   jobTitle: string;
   company: string;
   overallScore: number;
-  verdict: InterviewVerdict;
   date: string;
 };
 
@@ -56,14 +37,14 @@ export function ReportsTable({ reports }: ReportsTableProps) {
               <th className="px-4 py-3 font-medium">Interview title</th>
               <th className="px-4 py-3 font-medium">Company</th>
               <th className="px-4 py-3 font-medium">Overall score</th>
-              <th className="px-4 py-3 font-medium">Verdict</th>
+              <th className="px-4 py-3 font-medium">Readiness</th>
               <th className="px-4 py-3 font-medium">Date</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {reports.map((report) => {
-              const verdict = verdictStyles[report.verdict];
+              const level = scoreLevelConfig[getScoreLevel(report.overallScore)];
 
               return (
                 <tr
@@ -81,18 +62,21 @@ export function ReportsTable({ reports }: ReportsTableProps) {
                   </td>
                   <td className="px-4 py-4">
                     <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${verdict.className}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${level.badge}`}
                     >
-                      {verdict.label}
+                      {level.label}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-[var(--muted)]">
                     {formatDate(report.date)}
                   </td>
                   <td className="px-4 py-4">
-                    <Link href={`/interview/${report.id}/report`}>
+                    <Link
+                      href={`/interview/${report.id}/report`}
+                      className="cursor-pointer"
+                    >
                       <Button variant="secondary" className="px-3 py-1.5 text-xs">
-                        View report
+                        View Report
                       </Button>
                     </Link>
                   </td>
@@ -105,7 +89,7 @@ export function ReportsTable({ reports }: ReportsTableProps) {
 
       <div className="space-y-4 md:hidden">
         {reports.map((report) => {
-          const verdict = verdictStyles[report.verdict];
+          const level = scoreLevelConfig[getScoreLevel(report.overallScore)];
 
           return (
             <Card key={report.id} padding="md" className="space-y-3">
@@ -122,17 +106,20 @@ export function ReportsTable({ reports }: ReportsTableProps) {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${verdict.className}`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${level.badge}`}
                 >
-                  {verdict.label}
+                  {level.label}
                 </span>
                 <span className="text-sm text-[var(--muted)]">
                   {formatDate(report.date)}
                 </span>
               </div>
-              <Link href={`/interview/${report.id}/report`}>
+              <Link
+                href={`/interview/${report.id}/report`}
+                className="block cursor-pointer"
+              >
                 <Button variant="secondary" className="w-full">
-                  View report
+                  View Report
                 </Button>
               </Link>
             </Card>
