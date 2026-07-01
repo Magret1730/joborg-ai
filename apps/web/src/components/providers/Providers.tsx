@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import { RouterProvider } from "@heroui/react";
+import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -16,8 +17,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       storageKey="joborg-ai-theme"
     >
       <RouterProvider navigate={router.push}>
-        {children}
-        <ToastProvider />
+        <AuthProvider>
+          {children}
+          <ToastProvider />
+        </AuthProvider>
       </RouterProvider>
     </ThemeProvider>
   );

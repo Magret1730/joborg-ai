@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FiMenu, FiX } from "react-icons/fi";
+import { AuthNavActions } from "@/components/auth/AuthNavActions";
 import { AppLogo } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const navLinks = [
@@ -35,9 +35,7 @@ export function PublicHeader() {
 
         <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
-          <Link href="/start">
-            <Button>Start Interview</Button>
-          </Link>
+          <AuthNavActions variant="public" />
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
@@ -66,9 +64,12 @@ export function PublicHeader() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/start" onClick={() => setMobileOpen(false)} className="mt-2">
-              <Button className="w-full">Start Interview</Button>
-            </Link>
+            <div className="mt-3 border-t border-[var(--border)] pt-3">
+              <AuthNavActions
+                variant="public"
+                onNavigate={() => setMobileOpen(false)}
+              />
+            </div>
           </nav>
         </div>
       )}

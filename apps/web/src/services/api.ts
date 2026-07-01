@@ -1,5 +1,13 @@
+import { getToken, removeToken } from "@/lib/authToken";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5001/api/v1";
+
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: () => void) {
+  unauthorizedHandler = handler;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -40,6 +48,21 @@ async function parseResponseBody(response: Response) {
   }
 }
 
+function buildAuthHeaders(headers?: HeadersInit): HeadersInit {
+  const token = getToken();
+  const nextHeaders = new Headers(headers);
+
+  if (!nextHeaders.has("Content-Type")) {
+    nextHeaders.set("Content-Type", "application/json");
+  }
+
+  if (token) {
+    nextHeaders.set("Authorization", `Bearer ${token}`);
+  }
+
+  return nextHeaders;
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options;
 
@@ -48,10 +71,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...rest,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
+      headers: buildAuthHeaders(headers),
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -63,11 +83,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   const payload = await parseResponseBody(response);
 
+  if (response.status === 401) {
+    removeToken();
+    unauthorizedHandler?.();
+  }
+
   if (!response.ok) {
     const message =
       payload && "message" in payload && payload.message
         ? payload.message
-        : "Something went wrong. Please try again in a moment.";
+        : response.status === 401
+          ? "Your session has expired. Please log in again."
+          : "Something went wrong. Please try again in a moment.";
 
     throw new ApiError(response.status, message);
   }
