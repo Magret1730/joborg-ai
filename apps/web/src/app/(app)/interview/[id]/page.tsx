@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnswerForm } from "@/components/interviews/AnswerForm";
 import { FeedbackCard } from "@/components/interviews/FeedbackCard";
+import { FeedbackLoadingCard } from "@/components/interviews/FeedbackLoadingCard";
 import { InterviewSessionSidebar } from "@/components/interviews/InterviewSessionSidebar";
 import { QuestionCard } from "@/components/interviews/QuestionCard";
 import { QuestionNavigator } from "@/components/interviews/QuestionNavigator";
@@ -216,21 +217,27 @@ export default function InterviewPage() {
         );
       }
 
-      toast.success("Answer evaluated successfully!");
+      toast.success("Answer evaluated successfully.", {
+        toastId: `answer-evaluated-${interviewId}-${currentIndex}`,
+      });
     } catch (err) {
       const message =
         err instanceof ApiError
           ? err.message
           : "Failed to evaluate answer. Please try again.";
 
-      toast.error(message);
+      toast.error(message, {
+        toastId: `answer-error-${interviewId}-${currentIndex}`,
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleGenerateReport = () => {
-    toast.info("Final report generation is coming in the next task.");
+    toast.info("Final report generation is coming in the next task.", {
+      toastId: `generate-report-${interviewId}`,
+    });
   };
 
   const goToQuestion = (index: number) => {
@@ -316,13 +323,19 @@ export default function InterviewPage() {
             onClear={clearAnswer}
             onSubmit={() => void handleSubmitAnswer()}
             isSubmitting={isSubmitting}
+            hasSavedAnswer={Boolean(currentSavedAnswer)}
+            savedScore={currentSavedAnswer?.score}
           />
 
-          {currentSavedAnswer && (
-            <FeedbackCard
-              score={currentSavedAnswer.score}
-              feedback={currentSavedAnswer.feedback}
-            />
+          {isSubmitting ? (
+            <FeedbackLoadingCard />
+          ) : (
+            currentSavedAnswer && (
+              <FeedbackCard
+                score={currentSavedAnswer.score}
+                feedback={currentSavedAnswer.feedback}
+              />
+            )
           )}
 
           <QuestionNavigator

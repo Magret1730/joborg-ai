@@ -58,19 +58,27 @@ export function InterviewSessionSidebar({
       </div>
 
       <div className="space-y-4 border-t border-[var(--border)] pt-5">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-[var(--muted)]">Questions answered</span>
-          <span className="font-medium text-[var(--text)]">
-            {answeredCount} / {totalQuestions}
-          </span>
+        <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-soft)] p-4">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-sm text-[var(--muted)]">Questions answered</span>
+            <span className="text-lg font-bold text-[var(--text)]">
+              {answeredCount}
+              <span className="text-sm font-normal text-[var(--muted)]">
+                {" "}
+                / {totalQuestions}
+              </span>
+            </span>
+          </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-            <span>Overall progress</span>
-            <span>{progressPercent}%</span>
+            <span>Completion progress</span>
+            <span className="font-semibold text-[var(--text)]">
+              {progressPercent}%
+            </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-hover)]">
+          <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface-hover)]">
             <div
               className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
@@ -93,17 +101,18 @@ export function InterviewSessionSidebar({
           ) : (
             <FiLock size={18} className="mt-0.5 shrink-0 text-[var(--muted)]" />
           )}
-          <p className="text-sm leading-relaxed text-[var(--text-soft)]">
+          <p className="text-sm font-medium leading-relaxed text-[var(--text-soft)]">
             {allQuestionsAnswered
-              ? "All questions answered. You can generate your final report once report generation is available."
-              : "Complete all questions to unlock your final report."}
+              ? "Ready for final report"
+              : "Answer all questions to unlock your final report."}
           </p>
         </div>
 
         <Button
           disabled={!allQuestionsAnswered}
           onClick={onGenerateReport}
-          className="w-full"
+          className="w-full cursor-pointer"
+          aria-label="Generate final report"
         >
           <FiFileText size={16} />
           Generate Report
