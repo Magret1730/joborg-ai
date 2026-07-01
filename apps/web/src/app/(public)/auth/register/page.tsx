@@ -46,7 +46,7 @@ export default function RegisterPage() {
         email: email.trim(),
         password,
       });
-      router.push("/dashboard");
+      router.push("/auth/login");
     } catch {
       // Error toast is handled in AuthContext.
     } finally {

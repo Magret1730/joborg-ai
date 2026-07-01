@@ -97,29 +97,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const register = useCallback(
-    async (payload: RegisterPayload) => {
-      try {
-        const session = await authService.register(payload);
-        setToken(session.token);
-        setTokenState(session.token);
-        setUser(session.user);
-        toast.success("Account created successfully.", {
-          toastId: "auth-register-success",
-        });
-      } catch (error) {
-        toast.error(
-          getFriendlyErrorMessage(
-            error,
-            "We couldn't create your account. Please try again.",
-          ),
-          { toastId: "auth-register-error" },
-        );
-        throw error;
-      }
-    },
-    [],
-  );
+  const register = useCallback(async (payload: RegisterPayload) => {
+    try {
+      await authService.register(payload);
+      toast.success("Account created successfully. Please log in.", {
+        toastId: "auth-register-success",
+      });
+    } catch (error) {
+      toast.error(
+        getFriendlyErrorMessage(
+          error,
+          "We couldn't create your account. Please try again.",
+        ),
+        { toastId: "auth-register-error" },
+      );
+      throw error;
+    }
+  }, []);
 
   const logout = useCallback(async () => {
     try {
