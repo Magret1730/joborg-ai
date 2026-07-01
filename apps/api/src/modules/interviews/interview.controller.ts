@@ -21,7 +21,6 @@ export const generateInterview = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = getAuthenticatedUserId(req);
 
-    // TODO(Pricing): Enforce plan limits before calling Gemini.
     const generated = await aiService.generateInterviewQuestions(req.body);
     const result = await interviewService.createInterviewFromGeneration(
       userId,
@@ -66,7 +65,7 @@ export const getInterview = asyncHandler(async (req: Request, res: Response) => 
 export const submitAnswer = asyncHandler(async (req: Request, res: Response) => {
   const userId = getAuthenticatedUserId(req);
 
-  // TODO(Pricing): Limit re-evaluations based on subscription plan.
+  // TODO(Pricing): Limit answer evaluations per plan before calling Gemini.
   const result = await interviewService.submitAnswer(
     userId,
     String(req.params.id),
@@ -94,7 +93,7 @@ export const generateFinalReport = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = getAuthenticatedUserId(req);
 
-    // TODO(Pricing): Premium users can regenerate reports.
+    // TODO(Pricing): Limit final report generation/regeneration per plan before calling Gemini.
     const report = await interviewService.generateFinalReport(
       userId,
       String(req.params.id),

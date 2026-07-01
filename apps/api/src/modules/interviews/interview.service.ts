@@ -83,7 +83,7 @@ export class InterviewService {
   ): Promise<SubmitAnswerResult> {
     const interview = await this.getOwnedInterviewOrThrow(interviewId, userId);
 
-    // TODO(Pricing): Enforce evaluation limits before calling Gemini.
+    // TODO(Pricing): Limit answer evaluations per plan before calling Gemini.
     const evaluation = await this.aiService.evaluateAnswer(payload);
 
     await this.repository.upsertAnswer({
@@ -137,7 +137,7 @@ export class InterviewService {
       throw new AppError(API_MESSAGES.INTERVIEW_NOT_READY_FOR_REPORT, 400);
     }
 
-    // TODO(Pricing): Enforce report generation limits before calling Gemini.
+    // TODO(Pricing): Limit final report generation/regeneration per plan before calling Gemini.
     const report = await this.aiService.generateFinalReport({
       interviewTitle: interview.title,
       companyName: interview.company_name ?? "Unknown Company",

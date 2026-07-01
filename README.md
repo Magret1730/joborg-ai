@@ -281,7 +281,21 @@ Joborg AI uses **Google Gemini** (`gemini-2.5-flash`) with JSON response mode an
 
 Prompts live in `apps/api/src/modules/ai/prompts/`. All Gemini calls go through `AiService` → `GeminiService` with a 30-second timeout and structured error handling.
 
-AI usage limits and pricing are **not enforced yet** — see [Future pricing and usage limits](#future-pricing-and-usage-limits).
+### Current MVP AI usage limits
+
+During MVP testing, AI-heavy routes are rate-limited per user (24-hour rolling window) to protect Gemini free-tier usage:
+
+| Action | Limit |
+|--------|-------|
+| Interview generation | 1 per day |
+| Answer evaluation | 5 per day |
+| Final report generation | 1 per day |
+
+One full interview session uses exactly that budget: 1 generation + 5 evaluations + 1 report.
+
+Limits are enforced **before** Gemini is called via `express-rate-limit` middleware (`apps/api/src/middleware/rateLimiters.ts`). Over-limit requests return `429` with a friendly message in the standard API error format.
+
+Future Joborg pricing and subscription plans will replace or extend these MVP limits with plan-based quotas.
 
 ---
 
@@ -309,9 +323,10 @@ Joborg AI is designed to integrate with the main Joborg pricing and subscription
 
 ### Current state
 
-- `interviews.user_id` is nullable and ready for auth later
-- Usage tracking is **not implemented yet**
+- `interviews.user_id` links interviews to authenticated users
+- MVP per-user rate limits protect Gemini usage (see [Current MVP AI usage limits](#current-mvp-ai-usage-limits))
 - Plan and subscription checks are **not implemented yet**
+- Usage tracking tables are **not implemented yet**
 
 ### Free plan
 

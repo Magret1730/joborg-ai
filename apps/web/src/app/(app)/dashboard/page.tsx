@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiArrowRight, FiCalendar } from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard } from "@/components/interviews/ScoreCard";
 import { InterviewHistoryTable } from "@/components/interviews/InterviewHistoryTable";
@@ -31,6 +32,7 @@ function formatRelativeDate(date: string) {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [interviews, setInterviews] = useState<InterviewListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +101,12 @@ export default function DashboardPage() {
           </Link>
         }
       />
+
+      {user?.plan === "free" && (
+        <p className="text-sm text-[var(--muted)]">
+          Free plan: 1 interview generation per day. Premium coming soon.
+        </p>
+      )}
 
       <Card
         padding="lg"
