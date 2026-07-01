@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FiFileText, FiLock, FiUnlock } from "react-icons/fi";
 import type { InterviewStatus } from "@/types/interview";
 import {
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
 type InterviewSessionSidebarProps = {
+  interviewId: string;
   title: string;
   companyName: string | null;
   status: InterviewStatus;
@@ -18,10 +20,13 @@ type InterviewSessionSidebarProps = {
   currentQuestionNumber: number;
   progressPercent: number;
   readyForReport: boolean;
+  hasFinalReport: boolean;
+  isGeneratingReport: boolean;
   onGenerateReport: () => void;
 };
 
 export function InterviewSessionSidebar({
+  interviewId,
   title,
   companyName,
   status,
@@ -30,6 +35,8 @@ export function InterviewSessionSidebar({
   currentQuestionNumber,
   progressPercent,
   readyForReport,
+  hasFinalReport,
+  isGeneratingReport,
   onGenerateReport,
 }: InterviewSessionSidebarProps) {
   const displayStatus = getDisplayStatus({ status, readyForReport });
@@ -102,15 +109,27 @@ export function InterviewSessionSidebar({
           </p>
         </div>
 
-        <Button
-          disabled={!readyForReport}
-          onClick={onGenerateReport}
-          className="w-full cursor-pointer"
-          aria-label="Generate final report"
-        >
-          <FiFileText size={16} />
-          Generate Report
-        </Button>
+        {hasFinalReport ? (
+          <Link
+            href={`/interview/${interviewId}/report`}
+            className="block w-full cursor-pointer"
+          >
+            <Button className="w-full">
+              <FiFileText size={16} />
+              View Report
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            disabled={!readyForReport || isGeneratingReport}
+            onClick={onGenerateReport}
+            className="w-full cursor-pointer"
+            aria-label="Generate final report"
+          >
+            <FiFileText size={16} />
+            {isGeneratingReport ? "Generating..." : "Generate Report"}
+          </Button>
+        )}
       </div>
     </Card>
   );
