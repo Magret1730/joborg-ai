@@ -1,26 +1,47 @@
 import { Card } from "@/components/ui/Card";
+import { getScoreLevel, scoreLevelConfig } from "@/lib/scoreUtils";
 
 type ScoreCardProps = {
   label: string;
   score: number;
   highlight?: boolean;
+  showLevel?: boolean;
 };
 
-export function ScoreCard({ label, score, highlight = false }: ScoreCardProps) {
+export function ScoreCard({
+  label,
+  score,
+  highlight = false,
+  showLevel = false,
+}: ScoreCardProps) {
+  const level = getScoreLevel(score);
+  const config = scoreLevelConfig[level];
+
   return (
     <Card
       padding="md"
-      className={highlight ? "border-[var(--primary)] bg-[var(--surface-soft)]" : ""}
+      className={`${
+        highlight
+          ? "border-[var(--primary-soft)] bg-[var(--surface-soft)]"
+          : ""
+      } ${showLevel ? "border-l-[3px] border-l-[var(--accent)]" : ""}`}
     >
-      <p className="text-sm text-[var(--muted)]">{label}</p>
+      <p className="text-sm font-medium text-[var(--muted)]">{label}</p>
       <p
         className={`mt-2 text-3xl font-bold ${
-          highlight ? "text-[var(--accent)]" : "text-[var(--text)]"
+          showLevel ? config.text : highlight ? "text-[var(--accent)]" : "text-[var(--text)]"
         }`}
       >
         {score}
         <span className="text-base font-medium text-[var(--muted)]">/100</span>
       </p>
+      {showLevel && (
+        <span
+          className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${config.badge}`}
+        >
+          {config.label}
+        </span>
+      )}
     </Card>
   );
 }
