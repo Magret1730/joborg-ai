@@ -30,6 +30,56 @@ export const historySortOptions: {
   { value: "lowest_score", label: "Lowest score" },
 ];
 
+function getCreatedAtTime(value: string) {
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function compareCreatedAt(
+  left: InterviewListItem,
+  right: InterviewListItem,
+  direction: "asc" | "desc",
+) {
+  const leftTime = getCreatedAtTime(left.createdAt);
+  const rightTime = getCreatedAtTime(right.createdAt);
+  const diff = leftTime - rightTime;
+
+  if (diff === 0) {
+    return left.title.localeCompare(right.title);
+  }
+
+  return direction === "asc" ? diff : -diff;
+}
+
+function compareScores(
+  left: InterviewListItem,
+  right: InterviewListItem,
+  direction: "asc" | "desc",
+) {
+  const leftScore = left.overallScore;
+  const rightScore = right.overallScore;
+
+  if (leftScore === null && rightScore === null) {
+    return compareCreatedAt(left, right, "desc");
+  }
+
+  if (leftScore === null) {
+    return 1;
+  }
+
+  if (rightScore === null) {
+    return -1;
+  }
+
+  const diff = leftScore - rightScore;
+
+  if (diff === 0) {
+    return compareCreatedAt(left, right, "desc");
+  }
+
+  return direction === "asc" ? diff : -diff;
+}
+
 export function filterInterviews(
   interviews: InterviewListItem[],
   searchQuery: string,
@@ -60,24 +110,14 @@ export function sortInterviews(
   sorted.sort((left, right) => {
     switch (sortOption) {
       case "oldest":
-        return (
-          new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
-        );
-      case "highest_score": {
-        const leftScore = left.overallScore ?? -1;
-        const rightScore = right.overallScore ?? -1;
-        return rightScore - leftScore;
-      }
-      case "lowest_score": {
-        const leftScore = left.overallScore ?? Number.POSITIVE_INFINITY;
-        const rightScore = right.overallScore ?? Number.POSITIVE_INFINITY;
-        return leftScore - rightScore;
-      }
+        return compareCreatedAt(left, right, "asc");
+      case "highest_score":
+        return compareScores(left, right, "desc");
+      case "lowest_score":
+        return compareScores(left, right, "asc");
       case "newest":
       default:
-        return (
-          new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-        );
+        return compareCreatedAt(left, right, "desc");
     }
   });
 
@@ -94,4 +134,14 @@ export function hasActiveHistoryFilters(
     statusFilter !== "all" ||
     sortOption !== "newest"
   );
+}
+
+export function formatDeleteSuccessMessage(interview: InterviewListItem) {
+  const companyName = interview.companyName?.trim();
+
+  if (companyName) {
+    return `${companyName} interview deleted.`;
+  }
+
+  return `${interview.title} deleted.`;
 }

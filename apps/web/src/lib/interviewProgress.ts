@@ -66,7 +66,7 @@ export function getSessionStatusLabel(
   }
 
   if (readyForReport) {
-    return displayStatusLabels.ready_for_report;
+    return "Ready";
   }
 
   if (status === "in_progress") {

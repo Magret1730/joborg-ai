@@ -14,6 +14,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import {
   filterInterviews,
+  formatDeleteSuccessMessage,
   hasActiveHistoryFilters,
   sortInterviews,
   type HistorySortOption,
@@ -109,7 +110,7 @@ export default function HistoryPage() {
       setInterviews((previous) =>
         previous.filter((interview) => interview.id !== interviewToDelete.id),
       );
-      toast.success("Interview deleted successfully.", {
+      toast.success(formatDeleteSuccessMessage(interviewToDelete), {
         toastId: `delete-interview-${interviewToDelete.id}`,
       });
       setInterviewToDelete(null);
@@ -164,10 +165,16 @@ export default function HistoryPage() {
           />
 
           {filteredInterviews.length > 0 ? (
-            <InterviewHistoryTable
-              interviews={filteredInterviews}
-              onDelete={handleDeleteRequest}
-            />
+            <div className="space-y-3">
+              <p className="text-sm text-[var(--muted)]">
+                Showing {filteredInterviews.length} of {interviews.length}{" "}
+                interview{interviews.length === 1 ? "" : "s"}
+              </p>
+              <InterviewHistoryTable
+                interviews={filteredInterviews}
+                onDelete={handleDeleteRequest}
+              />
+            </div>
           ) : (
             <EmptyState
               title="No matching interviews"

@@ -1,20 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import {
-  FiFileText,
-  FiPlay,
-  FiTrash2,
-} from "react-icons/fi";
-import { toast } from "react-toastify";
+import { InterviewActionsMenu } from "@/components/interviews/InterviewActionsMenu";
+import { StatusBadge } from "@/components/interviews/StatusBadge";
 import type { InterviewListItem } from "@/types/interview";
-import {
-  displayStatusLabels,
-  displayStatusStyles,
-  formatProgressLabel,
-  getDisplayStatus,
-} from "@/lib/interviewProgress";
-import { Button } from "@/components/ui/Button";
+import { formatProgressLabel, getDisplayStatus } from "@/lib/interviewProgress";
 import { Card } from "@/components/ui/Card";
 
 function formatDate(date: string) {
@@ -30,69 +19,6 @@ type InterviewHistoryTableProps = {
   onDelete?: (interview: InterviewListItem) => void;
 };
 
-function InterviewActions({
-  interview,
-  onDelete,
-  compact = false,
-}: {
-  interview: InterviewListItem;
-  onDelete?: (interview: InterviewListItem) => void;
-  compact?: boolean;
-}) {
-  const buttonClass = compact
-    ? "w-full cursor-pointer sm:w-auto"
-    : "cursor-pointer px-3 py-1.5 text-xs";
-
-  const handleGenerateReport = () => {
-    toast.info("Final report generation is coming in the next task.", {
-      toastId: `generate-report-history-${interview.id}`,
-    });
-  };
-
-  return (
-    <div className={`flex flex-wrap gap-2 ${compact ? "flex-col sm:flex-row" : ""}`}>
-      {interview.status === "completed" ? (
-        <Link href={`/interview/${interview.id}/report`} className="cursor-pointer">
-          <Button variant="secondary" className={buttonClass}>
-            <FiFileText size={14} />
-            View Report
-          </Button>
-        </Link>
-      ) : (
-        <Link href={`/interview/${interview.id}`} className="cursor-pointer">
-          <Button variant="secondary" className={buttonClass}>
-            <FiPlay size={14} />
-            Continue Interview
-          </Button>
-        </Link>
-      )}
-
-      {interview.readyForReport && interview.status !== "completed" && (
-        <Button
-          variant="secondary"
-          onClick={handleGenerateReport}
-          className={buttonClass}
-        >
-          <FiFileText size={14} />
-          Generate Report
-        </Button>
-      )}
-
-      {onDelete && (
-        <Button
-          variant="ghost"
-          onClick={() => onDelete(interview)}
-          className={`${buttonClass} text-[var(--danger-text)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-text)]`}
-          aria-label={`Delete ${interview.title}`}
-        >
-          <FiTrash2 size={14} />
-          Delete
-        </Button>
-      )}
-    </div>
-  );
-}
-
 export function InterviewHistoryTable({
   interviews,
   onDelete,
@@ -100,7 +26,7 @@ export function InterviewHistoryTable({
   return (
     <>
       <div className="hidden overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--card-border)] md:block">
-        <table className="w-full min-w-[960px] text-left text-sm">
+        <table className="w-full min-w-[920px] text-left text-sm">
           <thead className="bg-[var(--table-header)] text-[var(--muted)]">
             <tr>
               <th className="px-4 py-3 font-medium">Title</th>
@@ -110,7 +36,7 @@ export function InterviewHistoryTable({
               <th className="px-4 py-3 font-medium">Score</th>
               <th className="px-4 py-3 font-medium">Created</th>
               <th className="px-4 py-3 font-medium">Updated</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+              <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -129,11 +55,7 @@ export function InterviewHistoryTable({
                     {interview.companyName ?? "—"}
                   </td>
                   <td className="px-4 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${displayStatusStyles[displayStatus]}`}
-                    >
-                      {displayStatusLabels[displayStatus]}
-                    </span>
+                    <StatusBadge status={displayStatus} />
                   </td>
                   <td className="px-4 py-4 text-[var(--text-soft)]">
                     <div className="space-y-1">
@@ -152,10 +74,11 @@ export function InterviewHistoryTable({
                   <td className="px-4 py-4 text-[var(--muted)]">
                     {formatDate(interview.updatedAt)}
                   </td>
-                  <td className="px-4 py-4">
-                    <InterviewActions
+                  <td className="px-4 py-4 text-right">
+                    <InterviewActionsMenu
                       interview={interview}
                       onDelete={onDelete}
+                      align="right"
                     />
                   </td>
                 </tr>
@@ -172,7 +95,7 @@ export function InterviewHistoryTable({
           return (
             <Card key={interview.id} padding="md" className="space-y-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-[var(--text)]">
                     {interview.title}
                   </p>
@@ -180,11 +103,14 @@ export function InterviewHistoryTable({
                     {interview.companyName ?? "—"}
                   </p>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${displayStatusStyles[displayStatus]}`}
-                >
-                  {displayStatusLabels[displayStatus]}
-                </span>
+                <div className="flex shrink-0 items-start gap-2">
+                  <StatusBadge status={displayStatus} />
+                  <InterviewActionsMenu
+                    interview={interview}
+                    onDelete={onDelete}
+                    align="right"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -217,12 +143,6 @@ export function InterviewHistoryTable({
                   </p>
                 </div>
               </div>
-
-              <InterviewActions
-                interview={interview}
-                onDelete={onDelete}
-                compact
-              />
             </Card>
           );
         })}
