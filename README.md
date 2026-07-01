@@ -152,6 +152,68 @@ Planned integration approach:
 
 Gemini integration and production deployment will be added in later tasks.
 
+## Future pricing and usage limits
+
+Joborg AI is designed to later integrate with the main Joborg pricing and subscription system.
+
+### Current state
+
+- `interviews.user_id` is already nullable in the database and ready for auth later.
+- Usage tracking is **not implemented yet**.
+- Plan and subscription checks are **not implemented yet**.
+- AI routes call Gemini directly today with no quota enforcement.
+
+### Planned usage model
+
+#### Free plan
+
+- 1 interview generation per day
+- Limited answer evaluations
+- Limited final report generations
+- No report regeneration
+- No repeated answer re-evaluation beyond a small daily limit
+
+#### Paid plan
+
+- Multiple interview generations per day
+- More answer evaluations
+- Ability to re-evaluate answers
+- Ability to regenerate final reports
+- Higher AI usage limits
+- Priority access to future AI features
+
+### Usage-limited actions
+
+The following actions should count toward AI usage limits because they trigger Gemini API calls:
+
+- Generate interview questions
+- Evaluate answer
+- Re-evaluate answer
+- Generate final report
+- Regenerate final report
+
+Re-evaluate answer and regenerate final report should be treated as **premium or more strictly limited** actions compared to first-time evaluate/generate flows.
+
+### Enforcement points
+
+Usage limits should be enforced **before** calling Gemini to avoid wasting AI tokens.
+
+The best enforcement points are:
+
+- `POST /api/v1/interviews/generate`
+- `POST /api/v1/interviews/:id/answers`
+- `POST /api/v1/interviews/:id/final-report`
+
+When auth is added, each interview should be linked to a user through `user_id`, and usage should be checked against the user's Joborg subscription plan.
+
+### Future request flow
+
+```
+Request → authenticate → resolve plan → check usage quota
+       → if over limit, return 429
+       → else call Gemini → increment usage → return response
+```
+
 ## Related repos
 
 - [Joborg frontend](https://github.com/Magret1730/joborg-frontend)
