@@ -274,6 +274,21 @@ export class InterviewRepository {
     }
   }
 
+  async deleteInterviewById(interviewId: string): Promise<boolean> {
+    try {
+      let deleted = 0;
+
+      await this.db.transaction(async (trx) => {
+        await trx("answers").where({ interview_id: interviewId }).del();
+        deleted = await trx("interviews").where({ id: interviewId }).del();
+      });
+
+      return deleted > 0;
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
   mapInterviewDetail(
     record: InterviewRecord,
     answers: AnswerRecord[],

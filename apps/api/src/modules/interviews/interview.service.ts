@@ -100,4 +100,12 @@ export class InterviewService {
       ...progress,
     };
   }
+
+  async deleteInterview(id: string): Promise<void> {
+    const deleted = await this.repository.deleteInterviewById(id);
+
+    if (!deleted) {
+      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
+    }
+  }
 }

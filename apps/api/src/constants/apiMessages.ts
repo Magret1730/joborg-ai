@@ -11,5 +11,6 @@ export const API_MESSAGES = {
   VALIDATION_FAILED: "Validation failed",
   DATABASE_ERROR: "Database operation failed",
   ANSWER_EVALUATED: "Answer evaluated successfully",
+  INTERVIEW_DELETED: "Interview deleted successfully",
   NOT_IMPLEMENTED: "Not implemented yet",
 } as const;

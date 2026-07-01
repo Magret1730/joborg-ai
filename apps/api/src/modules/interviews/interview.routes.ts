@@ -3,6 +3,7 @@ import { evaluateAnswerSchema } from "../../lib/validation/evaluateAnswer.schema
 import { generateInterviewSchema } from "../../lib/validation/generateInterview.schema.js";
 import { validateBody } from "../../lib/validation/validate.js";
 import {
+  deleteInterview,
   generateInterview,
   getInterview,
   listInterviews,
@@ -23,5 +24,6 @@ interviewRoutes.post(
   submitAnswer,
 );
 interviewRoutes.get("/:id", getInterview);
+interviewRoutes.delete("/:id", deleteInterview);
 
 export default interviewRoutes;

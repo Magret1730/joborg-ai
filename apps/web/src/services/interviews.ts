@@ -41,4 +41,8 @@ export const interviewService = {
         payload,
       ),
     ),
+
+  delete: async (id: string) => {
+    await api.delete<ApiEnvelope<unknown>>(`/interviews/${id}`);
+  },
 };

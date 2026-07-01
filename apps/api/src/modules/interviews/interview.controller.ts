@@ -59,3 +59,12 @@ export const submitAnswer = asyncHandler(async (req: Request, res: Response) => 
     data: result,
   });
 });
+
+export const deleteInterview = asyncHandler(async (req: Request, res: Response) => {
+  await interviewService.deleteInterview(String(req.params.id));
+
+  sendSuccess({
+    res,
+    message: API_MESSAGES.INTERVIEW_DELETED,
+  });
+});
