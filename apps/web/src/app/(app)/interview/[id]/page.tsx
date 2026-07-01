@@ -22,12 +22,7 @@ import type {
   InterviewDetail,
   SubmitAnswerResponse,
 } from "@/types/interview";
-
-const statusLabels: Record<string, string> = {
-  draft: "Draft",
-  in_progress: "In Progress",
-  completed: "Completed",
-};
+import { getSessionStatusLabel } from "@/lib/interviewProgress";
 
 type SavedAnswerState = {
   answerText: string;
@@ -55,6 +50,10 @@ function getAnsweredProgressPercent(
   }
 
   return Math.round((answeredCount / totalQuestions) * 100);
+}
+
+function buildAnsweredIndexes(savedAnswers: Record<number, SavedAnswerState>) {
+  return new Set(Object.keys(savedAnswers).map((index) => Number(index)));
 }
 
 function isAnswerFeedback(value: unknown): value is AnswerFeedback {
@@ -146,26 +145,25 @@ export default function InterviewPage() {
   }, [interviewId]);
 
   const questions = interview?.questions ?? [];
-  const totalQuestions = questions.length;
+  const totalQuestions = interview?.questionCount ?? questions.length;
   const currentQuestion = questions[currentIndex];
   const currentAnswer = draftAnswers[currentIndex] ?? "";
   const currentSavedAnswer = savedAnswers[currentIndex];
 
-  const answeredIndexes = useMemo(() => {
-    return new Set(
-      Object.keys(savedAnswers).map((index) => Number(index)),
-    );
-  }, [savedAnswers]);
+  const answeredIndexes = useMemo(
+    () => buildAnsweredIndexes(savedAnswers),
+    [savedAnswers],
+  );
 
-  const answeredCount = answeredIndexes.size;
-  const allQuestionsAnswered =
-    totalQuestions > 0 && answeredCount === totalQuestions;
+  const answeredCount = interview?.answeredCount ?? answeredIndexes.size;
+  const progressPercentage =
+    interview?.progressPercentage ??
+    getAnsweredProgressPercent(answeredCount, totalQuestions);
+  const readyForReport =
+    interview?.readyForReport ??
+    (totalQuestions > 0 && answeredCount === totalQuestions);
   const sessionProgressPercent = getSessionProgressPercent(
     currentIndex,
-    totalQuestions,
-  );
-  const answeredProgressPercent = getAnsweredProgressPercent(
-    answeredCount,
     totalQuestions,
   );
 
@@ -211,11 +209,18 @@ export default function InterviewPage() {
         },
       }));
 
-      if (interview.status === "draft") {
-        setInterview((previous) =>
-          previous ? { ...previous, status: "in_progress" } : previous,
-        );
-      }
+      setInterview((previous) =>
+        previous
+          ? {
+              ...previous,
+              status: result.status,
+              answeredCount: result.answeredCount,
+              questionCount: result.questionCount,
+              progressPercentage: result.progressPercentage,
+              readyForReport: result.readyForReport,
+            }
+          : previous,
+      );
 
       toast.success("Answer evaluated successfully.", {
         toastId: `answer-evaluated-${interviewId}-${currentIndex}`,
@@ -286,7 +291,7 @@ export default function InterviewPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <PageHeader
         title={interview.title}
-        description={`${interview.companyName ?? "Company"} · ${statusLabels[interview.status] ?? interview.status} · ${totalQuestions} questions`}
+        description={`${interview.companyName ?? "Company"} · ${getSessionStatusLabel(interview.status, readyForReport)} · ${totalQuestions} questions · ${progressPercentage}% complete`}
         action={
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link href="/history" className="cursor-pointer">
@@ -355,8 +360,8 @@ export default function InterviewPage() {
           totalQuestions={totalQuestions}
           answeredCount={answeredCount}
           currentQuestionNumber={currentIndex + 1}
-          progressPercent={answeredProgressPercent}
-          allQuestionsAnswered={allQuestionsAnswered}
+          progressPercent={progressPercentage}
+          readyForReport={readyForReport}
           onGenerateReport={handleGenerateReport}
         />
       </div>

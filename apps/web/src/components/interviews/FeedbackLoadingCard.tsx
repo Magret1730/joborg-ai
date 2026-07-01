@@ -16,7 +16,7 @@ export function FeedbackLoadingCard() {
             Evaluating your answer
           </p>
           <p className="text-xs text-[var(--muted)]">
-            Gemini is reviewing your response...
+            Your answer is being reviewed...
           </p>
         </div>
       </div>

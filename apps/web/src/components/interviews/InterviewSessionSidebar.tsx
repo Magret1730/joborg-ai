@@ -1,19 +1,13 @@
 import { FiFileText, FiLock, FiUnlock } from "react-icons/fi";
 import type { InterviewStatus } from "@/types/interview";
+import {
+  displayStatusStyles,
+  getDisplayStatus,
+  getReportUnlockMessage,
+  getSessionStatusLabel,
+} from "@/lib/interviewProgress";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-
-const statusStyles: Record<InterviewStatus, string> = {
-  draft: "bg-[var(--surface-hover)] text-[var(--muted)]",
-  in_progress: "bg-[var(--info-soft)] text-[var(--info-text)]",
-  completed: "bg-[var(--success-soft)] text-[var(--success-text)]",
-};
-
-const statusLabels: Record<InterviewStatus, string> = {
-  draft: "Draft",
-  in_progress: "In Progress",
-  completed: "Completed",
-};
 
 type InterviewSessionSidebarProps = {
   title: string;
@@ -23,7 +17,7 @@ type InterviewSessionSidebarProps = {
   answeredCount: number;
   currentQuestionNumber: number;
   progressPercent: number;
-  allQuestionsAnswered: boolean;
+  readyForReport: boolean;
   onGenerateReport: () => void;
 };
 
@@ -35,9 +29,11 @@ export function InterviewSessionSidebar({
   answeredCount,
   currentQuestionNumber,
   progressPercent,
-  allQuestionsAnswered,
+  readyForReport,
   onGenerateReport,
 }: InterviewSessionSidebarProps) {
+  const displayStatus = getDisplayStatus({ status, readyForReport });
+
   return (
     <Card padding="lg" className="space-y-6 lg:sticky lg:top-6">
       <div className="space-y-3">
@@ -51,9 +47,9 @@ export function InterviewSessionSidebar({
           </p>
         </div>
         <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[status]}`}
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${displayStatusStyles[displayStatus]}`}
         >
-          {statusLabels[status]}
+          {getSessionStatusLabel(status, readyForReport)}
         </span>
       </div>
 
@@ -96,20 +92,18 @@ export function InterviewSessionSidebar({
 
       <div className="space-y-3 border-t border-[var(--border)] pt-5">
         <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-soft)] p-4">
-          {allQuestionsAnswered ? (
+          {readyForReport ? (
             <FiUnlock size={18} className="mt-0.5 shrink-0 text-[var(--accent)]" />
           ) : (
             <FiLock size={18} className="mt-0.5 shrink-0 text-[var(--muted)]" />
           )}
           <p className="text-sm font-medium leading-relaxed text-[var(--text-soft)]">
-            {allQuestionsAnswered
-              ? "Ready for final report"
-              : "Answer all questions to unlock your final report."}
+            {getReportUnlockMessage(readyForReport)}
           </p>
         </div>
 
         <Button
-          disabled={!allQuestionsAnswered}
+          disabled={!readyForReport}
           onClick={onGenerateReport}
           className="w-full cursor-pointer"
           aria-label="Generate final report"

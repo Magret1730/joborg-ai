@@ -2,6 +2,7 @@ import { API_MESSAGES } from "../../constants/apiMessages.js";
 import { INTERVIEW_STATUS } from "../../constants/interviewStatus.js";
 import { getDb } from "../../config/db.js";
 import { AppError } from "../../utils/AppError.js";
+import { calculateInterviewProgress } from "../../utils/calculateInterviewProgress.js";
 import type { InterviewQuestion } from "../ai/types/ai.types.js";
 import type {
   AnswerRecord,
@@ -44,6 +45,7 @@ function mapListItem(
   const questions = Array.isArray(record.questions_json)
     ? record.questions_json
     : [];
+  const progress = calculateInterviewProgress(questions.length, answeredCount);
 
   return {
     id: record.id,
@@ -53,8 +55,7 @@ function mapListItem(
     overallScore: record.overall_score,
     createdAt: toIsoString(record.created_at),
     updatedAt: toIsoString(record.updated_at),
-    questionCount: questions.length,
-    answeredCount,
+    ...progress,
   };
 }
 
@@ -65,6 +66,7 @@ function mapDetail(
   const questions = Array.isArray(record.questions_json)
     ? (record.questions_json as InterviewQuestion[])
     : [];
+  const progress = calculateInterviewProgress(questions.length, answers.length);
 
   return {
     id: record.id,
@@ -78,6 +80,7 @@ function mapDetail(
     answers: answers.map(mapAnswer),
     createdAt: toIsoString(record.created_at),
     updatedAt: toIsoString(record.updated_at),
+    ...progress,
   };
 }
 

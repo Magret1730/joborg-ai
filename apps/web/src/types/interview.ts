@@ -52,6 +52,11 @@ export interface SubmitAnswerResponse {
   answerText: string;
   score: number;
   feedback: AnswerFeedback;
+  status: InterviewStatus;
+  questionCount: number;
+  answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
 }
 
 export interface InterviewListItem {
@@ -64,6 +69,8 @@ export interface InterviewListItem {
   updatedAt: string;
   questionCount: number;
   answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
 }
 
 export interface InterviewDetail {
@@ -78,6 +85,10 @@ export interface InterviewDetail {
   answers: Answer[];
   createdAt: string;
   updatedAt: string;
+  questionCount: number;
+  answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
 }
 
 export interface GenerateInterviewInput {

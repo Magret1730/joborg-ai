@@ -1,8 +1,9 @@
 import { API_MESSAGES } from "../../constants/apiMessages.js";
-import { INTERVIEW_STATUS } from "../../constants/interviewStatus.js";
 import type { GenerateInterviewInput } from "../../lib/validation/generateInterview.schema.js";
 import type { EvaluateAnswerInput } from "../../lib/validation/evaluateAnswer.schema.js";
 import { AppError } from "../../utils/AppError.js";
+import { calculateInterviewProgress } from "../../utils/calculateInterviewProgress.js";
+import { resolveInterviewStatus } from "../../utils/resolveInterviewStatus.js";
 import { AiService } from "../ai/ai.service.js";
 import type { InterviewGenerationResponse } from "../ai/types/ai.types.js";
 import { InterviewRepository } from "./interview.repository.js";
@@ -79,18 +80,24 @@ export class InterviewService {
       feedback: evaluation,
     });
 
-    if (interview.status === INTERVIEW_STATUS.DRAFT) {
-      await this.repository.updateInterviewStatus(
-        interviewId,
-        INTERVIEW_STATUS.IN_PROGRESS,
-      );
-    }
+    const questionCount = interview.questions_json.length;
+    const answeredCount =
+      await this.repository.countAnswersByInterviewId(interviewId);
+    const progress = calculateInterviewProgress(questionCount, answeredCount);
+    const status = resolveInterviewStatus(
+      answeredCount,
+      interview.final_report_json !== null,
+    );
+
+    await this.repository.updateInterviewStatus(interviewId, status);
 
     return {
       questionIndex: payload.questionIndex,
       answerText: payload.answerText,
       score: evaluation.score,
       feedback: evaluation as AnswerFeedback,
+      status,
+      ...progress,
     };
   }
 }
