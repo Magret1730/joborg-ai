@@ -9,6 +9,7 @@ import type { InterviewGenerationResponse } from "../ai/types/ai.types.js";
 import { InterviewRepository } from "./interview.repository.js";
 import type {
   AnswerFeedback,
+  FinalReportResult,
   GeneratedInterviewResult,
   InterviewDetail,
   InterviewListItem,
@@ -107,5 +108,42 @@ export class InterviewService {
     if (!deleted) {
       throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
     }
+  }
+
+  async generateFinalReport(interviewId: string): Promise<FinalReportResult> {
+    const interview = await this.repository.findInterviewById(interviewId);
+
+    if (!interview) {
+      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
+    }
+
+    const answers = await this.repository.findAnswersByInterviewId(interviewId);
+    const questionCount = interview.questions_json.length;
+
+    if (answers.length < questionCount) {
+      throw new AppError(API_MESSAGES.INTERVIEW_NOT_READY_FOR_REPORT, 400);
+    }
+
+    const report = await this.aiService.generateFinalReport({
+      interviewTitle: interview.title,
+      companyName: interview.company_name ?? "Unknown Company",
+      jobDescription: interview.job_description,
+      answers: answers.map((answer) => ({
+        questionIndex: answer.question_index,
+        questionText: answer.question_text,
+        questionType: answer.question_type,
+        answerText: answer.answer_text,
+        score: answer.score ?? 0,
+        feedback: answer.feedback_json,
+      })),
+    });
+
+    await this.repository.updateFinalReport(
+      interviewId,
+      report,
+      report.overallScore,
+    );
+
+    return report;
   }
 }

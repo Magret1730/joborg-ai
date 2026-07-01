@@ -68,3 +68,17 @@ export const deleteInterview = asyncHandler(async (req: Request, res: Response) 
     message: API_MESSAGES.INTERVIEW_DELETED,
   });
 });
+
+export const generateFinalReport = asyncHandler(
+  async (req: Request, res: Response) => {
+    const report = await interviewService.generateFinalReport(
+      String(req.params.id),
+    );
+
+    sendSuccess({
+      res,
+      message: API_MESSAGES.FINAL_REPORT_GENERATED,
+      data: report,
+    });
+  },
+);

@@ -10,10 +10,14 @@ import { AppError } from "../../utils/AppError.js";
 import { GeminiService } from "./gemini.service.js";
 import { parseJsonResponse } from "./parser/jsonParser.js";
 import { buildEvaluateAnswerPrompt } from "./prompts/evaluateAnswer.prompt.js";
+import { buildGenerateFinalReportPrompt } from "./prompts/generateFinalReport.prompt.js";
 import { buildGenerateInterviewPrompt } from "./prompts/generateInterviewQuestions.prompt.js";
 import {
   EXPECTED_QUESTION_COUNT,
+  FINAL_REPORT_VERDICTS,
   type AnswerEvaluationResponse,
+  type FinalReportResponse,
+  type GenerateFinalReportPromptInput,
   type InterviewGenerationResponse,
 } from "./types/ai.types.js";
 
@@ -49,6 +53,22 @@ const answerEvaluationResponseSchema = z.object({
   shortFeedback: z.string().min(1),
 });
 
+const finalReportResponseSchema = z.object({
+  overallScore: z.number().int().min(0).max(100),
+  technicalScore: z.number().int().min(0).max(100),
+  communicationScore: z.number().int().min(0).max(100),
+  readinessScore: z.number().int().min(0).max(100),
+  strengths: z.array(z.string().min(1)).min(1),
+  weaknesses: z.array(z.string().min(1)).min(1),
+  recommendations: z.array(z.string().min(1)).min(1),
+  summary: z.string().min(1),
+  verdict: z.enum([
+    FINAL_REPORT_VERDICTS.READY,
+    FINAL_REPORT_VERDICTS.ALMOST_READY,
+    FINAL_REPORT_VERDICTS.NEEDS_MORE_PRACTICE,
+  ]),
+});
+
 export class AiService {
   constructor(private readonly geminiService = new GeminiService()) {}
 
@@ -79,6 +99,21 @@ export class AiService {
     const rawResponse = await this.geminiService.generateContent(prompt);
     const parsed = parseJsonResponse<unknown>(rawResponse);
     const validated = answerEvaluationResponseSchema.safeParse(parsed);
+
+    if (!validated.success) {
+      throw new AppError(API_MESSAGES.GEMINI_INVALID_JSON, 502);
+    }
+
+    return validated.data;
+  }
+
+  async generateFinalReport(
+    input: GenerateFinalReportPromptInput,
+  ): Promise<FinalReportResponse> {
+    const prompt = buildGenerateFinalReportPrompt(input);
+    const rawResponse = await this.geminiService.generateContent(prompt);
+    const parsed = parseJsonResponse<unknown>(rawResponse);
+    const validated = finalReportResponseSchema.safeParse(parsed);
 
     if (!validated.success) {
       throw new AppError(API_MESSAGES.GEMINI_INVALID_JSON, 502);

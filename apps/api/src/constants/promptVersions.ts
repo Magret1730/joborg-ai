@@ -1,4 +1,5 @@
 export const PROMPT_VERSIONS = {
   GENERATE_INTERVIEW_QUESTIONS: "v1",
   EVALUATE_ANSWER: "v1",
+  GENERATE_FINAL_REPORT: "v1",
 } as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FiInbox, FiSearch } from "react-icons/fi";
 import { toast } from "react-toastify";
@@ -35,41 +35,32 @@ export default function HistoryPage() {
     useState<InterviewListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadInterviews() {
+  const loadInterviews = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
       setIsLoading(true);
-      setError(null);
+    }
+    setError(null);
 
-      try {
-        const data = await interviewService.list();
+    try {
+      const data = await interviewService.list();
+      setInterviews(data);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Failed to load interview history.";
 
-        if (isMounted) {
-          setInterviews(data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load interview history.";
-
-          setError(message);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      setError(message);
+    } finally {
+      if (!options?.silent) {
+        setIsLoading(false);
       }
     }
-
-    void loadInterviews();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    void loadInterviews();
+  }, [loadInterviews]);
 
   const filteredInterviews = useMemo(() => {
     const filtered = filterInterviews(interviews, searchQuery, statusFilter);
@@ -173,6 +164,7 @@ export default function HistoryPage() {
               <InterviewHistoryTable
                 interviews={filteredInterviews}
                 onDelete={handleDeleteRequest}
+                onRefresh={() => void loadInterviews({ silent: true })}
               />
             </div>
           ) : (

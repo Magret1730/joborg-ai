@@ -59,6 +59,18 @@ export interface SubmitAnswerResponse {
   readyForReport: boolean;
 }
 
+export interface FinalReportResponse {
+  overallScore: number;
+  technicalScore: number;
+  communicationScore: number;
+  readinessScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  summary: string;
+  verdict: string;
+}
+
 export interface InterviewListItem {
   id: string;
   title: string;
@@ -81,7 +93,7 @@ export interface InterviewDetail {
   questions: InterviewQuestion[];
   status: InterviewStatus;
   overallScore: number | null;
-  finalReport: unknown | null;
+  finalReport: FinalReportResponse | null;
   answers: Answer[];
   createdAt: string;
   updatedAt: string;

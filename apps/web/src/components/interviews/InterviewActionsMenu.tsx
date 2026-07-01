@@ -1,146 +1,208 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   FiFileText,
   FiMoreVertical,
   FiPlay,
+  FiRotateCcw,
   FiTrash2,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownTrigger,
+} from "@heroui/react";
+import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
 import type { InterviewListItem } from "@/types/interview";
+
+type MenuPlacement = "top end" | "top start" | "bottom end" | "bottom start";
 
 type InterviewActionsMenuProps = {
   interview: InterviewListItem;
   onDelete?: (interview: InterviewListItem) => void;
+  onRefresh?: () => void | Promise<void>;
   align?: "left" | "right";
 };
+
+const MENU_ESTIMATED_HEIGHT = 220;
+
+function getMenuPlacement(
+  trigger: HTMLElement,
+  align: "left" | "right",
+): MenuPlacement {
+  const rect = trigger.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  const openUpward =
+    spaceBelow < MENU_ESTIMATED_HEIGHT && spaceAbove > spaceBelow;
+  const horizontal = align === "right" ? "end" : "start";
+
+  return openUpward
+    ? (`top ${horizontal}` as MenuPlacement)
+    : (`bottom ${horizontal}` as MenuPlacement);
+}
 
 export function InterviewActionsMenu({
   interview,
   onDelete,
+  onRefresh,
   align = "right",
 }: InterviewActionsMenuProps) {
-  const menuId = useId();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [placement, setPlacement] = useState<MenuPlacement>(
+    align === "right" ? "bottom end" : "bottom start",
+  );
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
+  const isCompleted = interview.status === "completed";
+  const isReadyForReport =
+    interview.readyForReport && interview.status !== "completed";
+
+  const updatePlacement = () => {
+    if (triggerRef.current) {
+      setPlacement(getMenuPlacement(triggerRef.current, align));
+    }
+  };
+
+  const handleGenerateReport = async (isRegenerate: boolean) => {
+    if (isGenerating) {
       return;
     }
 
-    const handlePointerDown = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
+    setIsGenerating(true);
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
+    try {
+      await interviewService.generateFinalReport(interview.id);
+      toast.success(
+        isRegenerate
+          ? "Final report regenerated successfully."
+          : "Final report generated successfully.",
+        { toastId: `generate-report-history-${interview.id}` },
+      );
+      await onRefresh?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Failed to generate final report. Please try again.";
 
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen]);
-
-  const closeMenu = () => setIsOpen(false);
-
-  const handleGenerateReport = () => {
-    closeMenu();
-    toast.info("Final report generation is coming in the next task.", {
-      toastId: `generate-report-history-${interview.id}`,
-    });
+      toast.error(message, {
+        toastId: `generate-report-history-error-${interview.id}`,
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleDelete = () => {
-    closeMenu();
-    onDelete?.(interview);
+  const handleAction = (key: string) => {
+    switch (key) {
+      case "view-report":
+        router.push(`/interview/${interview.id}/report`);
+        break;
+      case "continue":
+        router.push(`/interview/${interview.id}`);
+        break;
+      case "generate-report":
+        void handleGenerateReport(false);
+        break;
+      case "regenerate-report":
+        void handleGenerateReport(true);
+        break;
+      case "delete":
+        onDelete?.(interview);
+        break;
+      default:
+        break;
+    }
   };
-
-  const menuItemClass =
-    "flex w-full cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm text-[var(--text)] transition hover:bg-[var(--surface-hover)] focus-visible:bg-[var(--surface-hover)] focus-visible:outline-none";
 
   return (
-    <div ref={containerRef} className="relative inline-flex">
-      <button
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        aria-controls={menuId}
-        onClick={() => setIsOpen((previous) => !previous)}
-        className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-        aria-label={`Actions for ${interview.title}`}
-      >
-        <FiMoreVertical size={16} />
-      </button>
-
-      {isOpen && (
-        <div
-          id={menuId}
-          role="menu"
-          className={`absolute top-full z-20 mt-2 min-w-48 rounded-[var(--radius-md)] border border-[var(--card-border)] bg-[var(--card)] p-1.5 shadow-[var(--card-shadow)] ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
+    <Dropdown
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
+          updatePlacement();
+        }
+      }}
+    >
+      <DropdownTrigger>
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-label={`Actions for ${interview.title}`}
+          className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
         >
-          {interview.status === "completed" ? (
-            <Link
-              href={`/interview/${interview.id}/report`}
-              role="menuitem"
-              className={menuItemClass}
-              onClick={closeMenu}
-            >
-              <FiFileText size={15} />
-              View Report
-            </Link>
-          ) : (
-            <Link
-              href={`/interview/${interview.id}`}
-              role="menuitem"
-              className={menuItemClass}
-              onClick={closeMenu}
-            >
-              <FiPlay size={15} />
-              Continue Interview
-            </Link>
-          )}
+          <FiMoreVertical size={16} />
+        </button>
+      </DropdownTrigger>
 
-          {interview.readyForReport && interview.status !== "completed" && (
-            <button
-              type="button"
-              role="menuitem"
-              className={menuItemClass}
-              onClick={handleGenerateReport}
-            >
-              <FiFileText size={15} />
-              Generate Report
-            </button>
+      <DropdownPopover placement={placement} offset={8} className="min-w-48 p-1.5">
+        <DropdownMenu
+          aria-label={`Actions for ${interview.title}`}
+          onAction={(key) => handleAction(String(key))}
+        >
+          {isCompleted ? (
+            <>
+              <DropdownItem
+                id="view-report"
+                textValue="View Report"
+                className="gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                <FiFileText size={15} />
+                View Report
+              </DropdownItem>
+              <DropdownItem
+                id="regenerate-report"
+                textValue="Regenerate Report"
+                isDisabled={isGenerating}
+                className="gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                <FiRotateCcw size={15} />
+                {isGenerating ? "Regenerating..." : "Regenerate Report"}
+              </DropdownItem>
+            </>
+          ) : (
+            <>
+              <DropdownItem
+                id="continue"
+                textValue="Continue Interview"
+                className="gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-sm text-[var(--text)]"
+              >
+                <FiPlay size={15} />
+                Continue Interview
+              </DropdownItem>
+              {isReadyForReport && (
+                <DropdownItem
+                  id="generate-report"
+                  textValue="Generate Report"
+                  isDisabled={isGenerating}
+                  className="gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-sm text-[var(--text)]"
+                >
+                  <FiFileText size={15} />
+                  {isGenerating ? "Generating..." : "Generate Report"}
+                </DropdownItem>
+              )}
+            </>
           )}
 
           {onDelete && (
-            <button
-              type="button"
-              role="menuitem"
-              className={`${menuItemClass} text-[var(--danger-text)] hover:bg-[var(--danger-soft)] focus-visible:bg-[var(--danger-soft)]`}
-              onClick={handleDelete}
+            <DropdownItem
+              id="delete"
+              textValue="Delete"
+              className="gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-sm text-[var(--danger-text)] data-[hovered=true]:bg-[var(--danger-soft)]"
             >
               <FiTrash2 size={15} />
               Delete
-            </button>
+            </DropdownItem>
           )}
-        </div>
-      )}
-    </div>
+        </DropdownMenu>
+      </DropdownPopover>
+    </Dropdown>
   );
 }

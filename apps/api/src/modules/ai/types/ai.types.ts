@@ -48,3 +48,40 @@ export interface AnswerEvaluationResponse {
   followUpQuestion: string;
   shortFeedback: string;
 }
+
+export const FINAL_REPORT_VERDICTS = {
+  READY: "Ready",
+  ALMOST_READY: "Almost Ready",
+  NEEDS_MORE_PRACTICE: "Needs More Practice",
+} as const;
+
+export type FinalReportVerdict =
+  (typeof FINAL_REPORT_VERDICTS)[keyof typeof FINAL_REPORT_VERDICTS];
+
+export interface FinalReportAnswerInput {
+  questionIndex: number;
+  questionText: string;
+  questionType: string;
+  answerText: string;
+  score: number;
+  feedback: unknown;
+}
+
+export interface GenerateFinalReportPromptInput {
+  interviewTitle: string;
+  companyName: string;
+  jobDescription: string;
+  answers: FinalReportAnswerInput[];
+}
+
+export interface FinalReportResponse {
+  overallScore: number;
+  technicalScore: number;
+  communicationScore: number;
+  readinessScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  summary: string;
+  verdict: FinalReportVerdict;
+}

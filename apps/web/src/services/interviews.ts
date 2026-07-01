@@ -1,4 +1,5 @@
 import type {
+  FinalReportResponse,
   GenerateInterviewInput,
   GenerateInterviewResponse,
   InterviewDetail,
@@ -45,4 +46,11 @@ export const interviewService = {
   delete: async (id: string) => {
     await api.delete<ApiEnvelope<unknown>>(`/interviews/${id}`);
   },
+
+  generateFinalReport: (interviewId: string) =>
+    unwrap(
+      api.post<ApiEnvelope<FinalReportResponse>>(
+        `/interviews/${interviewId}/final-report`,
+      ),
+    ),
 };

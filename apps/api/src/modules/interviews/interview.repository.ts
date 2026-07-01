@@ -3,10 +3,12 @@ import { INTERVIEW_STATUS } from "../../constants/interviewStatus.js";
 import { getDb } from "../../config/db.js";
 import { AppError } from "../../utils/AppError.js";
 import { calculateInterviewProgress } from "../../utils/calculateInterviewProgress.js";
+import { resolveInterviewStatus } from "../../utils/resolveInterviewStatus.js";
 import type { InterviewQuestion } from "../ai/types/ai.types.js";
 import type {
   AnswerRecord,
   CreateInterviewInput,
+  FinalReportResult,
   InterviewAnswer,
   InterviewDetail,
   InterviewListItem,
@@ -46,12 +48,14 @@ function mapListItem(
     ? record.questions_json
     : [];
   const progress = calculateInterviewProgress(questions.length, answeredCount);
+  const hasFinalReport = record.final_report_json !== null;
+  const status = resolveInterviewStatus(answeredCount, hasFinalReport);
 
   return {
     id: record.id,
     title: record.title,
     companyName: record.company_name,
-    status: record.status,
+    status,
     overallScore: record.overall_score,
     createdAt: toIsoString(record.created_at),
     updatedAt: toIsoString(record.updated_at),
@@ -67,6 +71,12 @@ function mapDetail(
     ? (record.questions_json as InterviewQuestion[])
     : [];
   const progress = calculateInterviewProgress(questions.length, answers.length);
+  const finalReport =
+    typeof record.final_report_json === "string"
+      ? JSON.parse(record.final_report_json)
+      : record.final_report_json;
+  const hasFinalReport = finalReport !== null && finalReport !== undefined;
+  const status = resolveInterviewStatus(answers.length, hasFinalReport);
 
   return {
     id: record.id,
@@ -74,9 +84,9 @@ function mapDetail(
     companyName: record.company_name,
     jobDescription: record.job_description,
     questions,
-    status: record.status,
+    status,
     overallScore: record.overall_score,
-    finalReport: record.final_report_json,
+    finalReport,
     answers: answers.map(mapAnswer),
     createdAt: toIsoString(record.created_at),
     updatedAt: toIsoString(record.updated_at),
@@ -267,6 +277,27 @@ export class InterviewRepository {
         .where({ id: interviewId })
         .update({
           status,
+          updated_at: this.db.fn.now(),
+        });
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
+  async updateFinalReport(
+    interviewId: string,
+    report: FinalReportResult,
+    overallScore: number,
+  ): Promise<void> {
+    try {
+      await this.db("interviews")
+        .where({ id: interviewId })
+        .update({
+          final_report_json: this.db.raw("?::jsonb", [
+            JSON.stringify(report),
+          ]),
+          overall_score: overallScore,
+          status: INTERVIEW_STATUS.COMPLETED,
           updated_at: this.db.fn.now(),
         });
     } catch {
