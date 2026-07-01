@@ -9,6 +9,7 @@ type ConfirmModalProps = {
   title: string;
   description: string;
   confirmLabel?: string;
+  confirmingLabel?: string;
   cancelLabel?: string;
   isConfirming?: boolean;
   confirmVariant?: "primary" | "secondary" | "ghost";
@@ -22,6 +23,7 @@ export function ConfirmModal({
   title,
   description,
   confirmLabel = "Confirm",
+  confirmingLabel,
   cancelLabel = "Cancel",
   isConfirming = false,
   confirmVariant = "primary",
@@ -119,7 +121,7 @@ export function ConfirmModal({
                 : ""
             }`}
           >
-            {isConfirming ? "Deleting..." : confirmLabel}
+            {isConfirming ? (confirmingLabel ?? `${confirmLabel}...`) : confirmLabel}
           </Button>
         </div>
       </div>

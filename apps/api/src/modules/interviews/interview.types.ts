@@ -120,3 +120,15 @@ export interface SubmitAnswerResult {
   progressPercentage: number;
   readyForReport: boolean;
 }
+
+export interface FinalReportResult {
+  overallScore: number;
+  technicalScore: number;
+  communicationScore: number;
+  readinessScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  summary: string;
+  verdict: string;
+}

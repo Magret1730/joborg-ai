@@ -14,10 +14,10 @@ export default function NotFoundPage() {
           The page you are looking for does not exist or may have been moved.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href="/dashboard">
+          <Link href="/dashboard" className="cursor-pointer">
             <Button className="w-full sm:w-auto">Go to Dashboard</Button>
           </Link>
-          <Link href="/">
+          <Link href="/" className="cursor-pointer">
             <Button variant="secondary" className="w-full sm:w-auto">
               Go Home
             </Button>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { FiArrowLeft, FiPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -15,14 +15,15 @@ import { QuestionNavigator } from "@/components/interviews/QuestionNavigator";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type {
   AnswerFeedback,
   InterviewDetail,
   SubmitAnswerResponse,
 } from "@/types/interview";
 import { getSessionStatusLabel } from "@/lib/interviewProgress";
+import { parseFinalReport } from "@/lib/finalReport";
 
 type SavedAnswerState = {
   answerText: string;
@@ -93,6 +94,7 @@ function hydrateFromInterview(interview: InterviewDetail) {
 
 export default function InterviewPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const interviewId = params.id;
 
   const [interview, setInterview] = useState<InterviewDetail | null>(null);
@@ -104,6 +106,7 @@ export default function InterviewPage() {
     Record<number, SavedAnswerState>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -123,12 +126,12 @@ export default function InterviewPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load interview.";
-
-          setError(message);
+          setError(
+            getFriendlyErrorMessage(
+              err,
+              "We couldn't load this interview. Please try again in a moment.",
+            ),
+          );
         }
       } finally {
         if (isMounted) {
@@ -162,6 +165,7 @@ export default function InterviewPage() {
   const readyForReport =
     interview?.readyForReport ??
     (totalQuestions > 0 && answeredCount === totalQuestions);
+  const hasFinalReport = parseFinalReport(interview?.finalReport ?? null) !== null;
   const sessionProgressPercent = getSessionProgressPercent(
     currentIndex,
     totalQuestions,
@@ -226,23 +230,59 @@ export default function InterviewPage() {
         toastId: `answer-evaluated-${interviewId}-${currentIndex}`,
       });
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to evaluate answer. Please try again.";
-
-      toast.error(message, {
-        toastId: `answer-error-${interviewId}-${currentIndex}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't evaluate your answer. Please try again in a moment.",
+        ),
+        {
+          toastId: `answer-error-${interviewId}-${currentIndex}`,
+        },
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGenerateReport = () => {
-    toast.info("Final report generation is coming in the next task.", {
-      toastId: `generate-report-${interviewId}`,
-    });
+  const handleGenerateReport = async () => {
+    if (!readyForReport || isGeneratingReport || hasFinalReport) {
+      return;
+    }
+
+    setIsGeneratingReport(true);
+
+    try {
+      const report = await interviewService.generateFinalReport(interviewId);
+
+      setInterview((previous) =>
+        previous
+          ? {
+              ...previous,
+              status: "completed",
+              overallScore: report.overallScore,
+              finalReport: report,
+              readyForReport: true,
+            }
+          : previous,
+      );
+
+      toast.success("Final report generated successfully.", {
+        toastId: `generate-report-${interviewId}`,
+      });
+      router.push(`/interview/${interviewId}/report`);
+    } catch (err) {
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't generate your final report. Please try again in a moment.",
+        ),
+        {
+          toastId: `generate-report-error-${interviewId}`,
+        },
+      );
+    } finally {
+      setIsGeneratingReport(false);
+    }
   };
 
   const goToQuestion = (index: number) => {
@@ -354,6 +394,7 @@ export default function InterviewPage() {
         </div>
 
         <InterviewSessionSidebar
+          interviewId={interviewId}
           title={interview.title}
           companyName={interview.companyName}
           status={interview.status}
@@ -362,7 +403,9 @@ export default function InterviewPage() {
           currentQuestionNumber={currentIndex + 1}
           progressPercent={progressPercentage}
           readyForReport={readyForReport}
-          onGenerateReport={handleGenerateReport}
+          hasFinalReport={hasFinalReport}
+          isGeneratingReport={isGeneratingReport}
+          onGenerateReport={() => void handleGenerateReport()}
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FiInbox, FiSearch } from "react-icons/fi";
 import { toast } from "react-toastify";
@@ -20,8 +20,8 @@ import {
   type HistorySortOption,
   type HistoryStatusFilter,
 } from "@/lib/interviewHistoryFilters";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type { InterviewListItem } from "@/types/interview";
 
 export default function HistoryPage() {
@@ -35,41 +35,32 @@ export default function HistoryPage() {
     useState<InterviewListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadInterviews() {
+  const loadInterviews = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
       setIsLoading(true);
-      setError(null);
+    }
+    setError(null);
 
-      try {
-        const data = await interviewService.list();
-
-        if (isMounted) {
-          setInterviews(data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load interview history.";
-
-          setError(message);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+    try {
+      const data = await interviewService.list();
+      setInterviews(data);
+    } catch (err) {
+      setError(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't load your interview history. Please try again in a moment.",
+        ),
+      );
+    } finally {
+      if (!options?.silent) {
+        setIsLoading(false);
       }
     }
-
-    void loadInterviews();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    void loadInterviews();
+  }, [loadInterviews]);
 
   const filteredInterviews = useMemo(() => {
     const filtered = filterInterviews(interviews, searchQuery, statusFilter);
@@ -115,14 +106,15 @@ export default function HistoryPage() {
       });
       setInterviewToDelete(null);
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Failed to delete interview. Please try again.";
-
-      toast.error(message, {
-        toastId: `delete-interview-error-${interviewToDelete.id}`,
-      });
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't delete this interview. Please try again in a moment.",
+        ),
+        {
+          toastId: `delete-interview-error-${interviewToDelete.id}`,
+        },
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -173,6 +165,7 @@ export default function HistoryPage() {
               <InterviewHistoryTable
                 interviews={filteredInterviews}
                 onDelete={handleDeleteRequest}
+                onRefresh={() => void loadInterviews({ silent: true })}
               />
             </div>
           ) : (
@@ -189,9 +182,10 @@ export default function HistoryPage() {
 
       <ConfirmModal
         isOpen={Boolean(interviewToDelete)}
-        title="Delete interview?"
-        description="This will permanently delete this interview session and its answers. This action cannot be undone."
-        confirmLabel="Delete"
+        title="Delete Interview?"
+        description="This will permanently delete this interview session and all of its answers. This action cannot be undone."
+        confirmLabel="Delete Interview"
+        confirmingLabel="Deleting..."
         cancelLabel="Cancel"
         isConfirming={isDeleting}
         onConfirm={() => void handleDeleteConfirm()}

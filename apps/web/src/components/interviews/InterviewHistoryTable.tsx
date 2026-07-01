@@ -17,11 +17,13 @@ function formatDate(date: string) {
 type InterviewHistoryTableProps = {
   interviews: InterviewListItem[];
   onDelete?: (interview: InterviewListItem) => void;
+  onRefresh?: () => void | Promise<void>;
 };
 
 export function InterviewHistoryTable({
   interviews,
   onDelete,
+  onRefresh,
 }: InterviewHistoryTableProps) {
   return (
     <>
@@ -78,6 +80,7 @@ export function InterviewHistoryTable({
                     <InterviewActionsMenu
                       interview={interview}
                       onDelete={onDelete}
+                      onRefresh={onRefresh}
                       align="right"
                     />
                   </td>
@@ -108,6 +111,7 @@ export function InterviewHistoryTable({
                   <InterviewActionsMenu
                     interview={interview}
                     onDelete={onDelete}
+                    onRefresh={onRefresh}
                     align="right"
                   />
                 </div>

@@ -10,6 +10,8 @@ const aiService = new AiService();
 
 export const generateInterview = asyncHandler(
   async (req: Request, res: Response) => {
+    // TODO(Auth): Associate interview with authenticated Joborg user.
+    // TODO(Pricing): Enforce plan limits before calling Gemini.
     const generated = await aiService.generateInterviewQuestions(req.body);
     const result = await interviewService.createInterviewFromGeneration(
       req.body,
@@ -48,6 +50,7 @@ export const getInterview = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const submitAnswer = asyncHandler(async (req: Request, res: Response) => {
+  // TODO(Pricing): Limit re-evaluations based on subscription plan.
   const result = await interviewService.submitAnswer(
     String(req.params.id),
     req.body,
@@ -68,3 +71,18 @@ export const deleteInterview = asyncHandler(async (req: Request, res: Response) 
     message: API_MESSAGES.INTERVIEW_DELETED,
   });
 });
+
+export const generateFinalReport = asyncHandler(
+  async (req: Request, res: Response) => {
+    // TODO(Pricing): Premium users can regenerate reports.
+    const report = await interviewService.generateFinalReport(
+      String(req.params.id),
+    );
+
+    sendSuccess({
+      res,
+      message: API_MESSAGES.FINAL_REPORT_GENERATED,
+      data: report,
+    });
+  },
+);

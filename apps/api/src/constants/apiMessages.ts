@@ -12,5 +12,8 @@ export const API_MESSAGES = {
   DATABASE_ERROR: "Database operation failed",
   ANSWER_EVALUATED: "Answer evaluated successfully",
   INTERVIEW_DELETED: "Interview deleted successfully",
+  FINAL_REPORT_GENERATED: "Final report generated successfully",
+  INTERVIEW_NOT_READY_FOR_REPORT:
+    "All questions must be answered before generating a final report",
   NOT_IMPLEMENTED: "Not implemented yet",
 } as const;

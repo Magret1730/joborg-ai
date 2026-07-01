@@ -8,10 +8,11 @@ import { StatCard } from "@/components/interviews/ScoreCard";
 import { InterviewHistoryTable } from "@/components/interviews/InterviewHistoryTable";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingCardGrid, LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type { InterviewListItem } from "@/types/interview";
 
 function formatRelativeDate(date: string) {
@@ -23,10 +24,10 @@ function formatRelativeDate(date: string) {
   }
 
   if (diffDays === 1) {
-    return "1d ago";
+    return "1 day ago";
   }
 
-  return `${diffDays}d ago`;
+  return `${diffDays} days ago`;
 }
 
 export default function DashboardPage() {
@@ -49,12 +50,12 @@ export default function DashboardPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load dashboard data.";
-
-          setError(message);
+          setError(
+            getFriendlyErrorMessage(
+              err,
+              "We couldn't load your dashboard. Please try again in a moment.",
+            ),
+          );
         }
       } finally {
         if (isMounted) {
@@ -147,10 +148,13 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
+      <section className="space-y-4" aria-labelledby="recent-interviews-heading">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-[var(--text)]">
+            <h2
+              id="recent-interviews-heading"
+              className="text-xl font-semibold text-[var(--text)]"
+            >
               Recent Interviews
             </h2>
             <p className="text-sm text-[var(--muted)]">
@@ -158,7 +162,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <Link href="/history" className="cursor-pointer">
-            <Button variant="secondary">View all</Button>
+            <Button variant="secondary">View All</Button>
           </Link>
         </div>
 
@@ -167,27 +171,24 @@ export default function DashboardPage() {
         ) : recentInterviews.length > 0 ? (
           <InterviewHistoryTable interviews={recentInterviews} />
         ) : (
-          <Card padding="lg" className="text-center">
-            <FiCalendar
-              size={28}
-              className="mx-auto mb-3 text-[var(--accent)]"
-            />
-            <p className="font-medium text-[var(--text)]">No interviews yet</p>
-            <p className="mt-1 text-sm text-[var(--muted)]">
-              Start your first practice session to see results here.
-            </p>
-          </Card>
+          <EmptyState
+            title="No interviews yet"
+            description="You haven't started any practice sessions. Generate your first interview from a job description to begin."
+            actionLabel="Start Interview"
+            actionHref="/start"
+            icon={<FiCalendar size={22} />}
+          />
         )}
       </section>
 
       {!isLoading && lastInterview && (
-        <Card padding="md" className="text-sm text-[var(--muted)]">
+        <p className="text-sm text-[var(--muted)]">
           Last interview:{" "}
           <span className="font-medium text-[var(--text)]">
             {lastInterview.title}
           </span>{" "}
           · {formatRelativeDate(lastInterview.createdAt)}
-        </Card>
+        </p>
       )}
     </div>
   );

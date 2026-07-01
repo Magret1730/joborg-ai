@@ -43,14 +43,23 @@ async function parseResponseBody(response: Response) {
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...rest,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "We couldn't reach the server. Please check your connection and try again.",
+    );
+  }
 
   const payload = await parseResponseBody(response);
 
@@ -58,7 +67,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     const message =
       payload && "message" in payload && payload.message
         ? payload.message
-        : `Request failed with status ${response.status}`;
+        : "Something went wrong. Please try again in a moment.";
 
     throw new ApiError(response.status, message);
   }

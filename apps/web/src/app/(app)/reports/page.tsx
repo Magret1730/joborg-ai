@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
-import { ApiError } from "@/services/api";
 import type { InterviewListItem } from "@/types/interview";
 
 export default function ReportsPage() {
@@ -33,12 +33,12 @@ export default function ReportsPage() {
         }
       } catch (err) {
         if (isMounted) {
-          const message =
-            err instanceof ApiError
-              ? err.message
-              : "Failed to load reports.";
-
-          setError(message);
+          setError(
+            getFriendlyErrorMessage(
+              err,
+              "We couldn't load your reports. Please try again in a moment.",
+            ),
+          );
         }
       } finally {
         if (isMounted) {
@@ -69,8 +69,7 @@ export default function ReportsPage() {
       jobTitle: interview.title,
       company: interview.companyName ?? "—",
       overallScore: interview.overallScore ?? 0,
-      verdict: "needs_practice" as const,
-      date: interview.createdAt,
+      date: interview.updatedAt,
     }));
 
   const hasContent =
@@ -100,7 +99,7 @@ export default function ReportsPage() {
       ) : (
         <EmptyState
           title="No reports yet"
-          description="No reports yet. Complete an interview to generate your first report."
+          description="Complete an interview and generate a final report to see your readiness scores and recommendations here."
           actionLabel="Start Interview"
           actionHref="/start"
         />

@@ -1,151 +1,281 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { FiArrowLeft, FiRotateCcw } from "react-icons/fi";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { ScoreCard } from "@/components/interviews/ScoreCard";
+import { useParams, useRouter } from "next/navigation";
+import {
+  FiArrowLeft,
+  FiFileText,
+  FiLock,
+  FiRotateCcw,
+  FiTarget,
+} from "react-icons/fi";
+import { toast } from "react-toastify";
+import { FinalReportView } from "@/components/interviews/FinalReportView";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getReportById } from "@/data/mockInterviews";
-import type { InterviewVerdict } from "@/types/interview";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
+import { parseFinalReport } from "@/lib/finalReport";
+import { interviewService } from "@/services/interviews";
+import type { FinalReportResponse, InterviewDetail } from "@/types/interview";
 
-const verdictStyles: Record<
-  InterviewVerdict,
-  { label: string; className: string }
-> = {
-  ready: {
-    label: "Interview Ready",
-    className: "bg-[var(--success-soft)] text-[var(--success-text)]",
-  },
-  almost_ready: {
-    label: "Almost Ready",
-    className: "bg-[var(--info-soft)] text-[var(--info-text)]",
-  },
-  needs_practice: {
-    label: "Needs Practice",
-    className: "bg-[var(--warning-soft)] text-[var(--warning-text)]",
-  },
-};
+export default function ReportPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const interviewId = params.id;
 
-type ReportPageProps = {
-  params: Promise<{ id: string }>;
-};
+  const [interview, setInterview] = useState<InterviewDetail | null>(null);
+  const [report, setReport] = useState<FinalReportResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function ReportPage({ params }: ReportPageProps) {
-  const { id } = await params;
-  const report = getReportById(id);
+  const loadInterview = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
 
-  if (!report) {
+    try {
+      const data = await interviewService.getById(interviewId);
+      setInterview(data);
+      setReport(parseFinalReport(data.finalReport));
+    } catch (err) {
+      setError(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't load this report. Please try again in a moment.",
+        ),
+      );
+      setInterview(null);
+      setReport(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [interviewId]);
+
+  useEffect(() => {
+    void loadInterview();
+  }, [loadInterview]);
+
+  const handleGenerateReport = async (isRegenerate: boolean) => {
+    setIsGenerating(true);
+
+    try {
+      const generated = await interviewService.generateFinalReport(interviewId);
+      setReport(generated);
+      setInterview((previous) =>
+        previous
+          ? {
+              ...previous,
+              status: "completed",
+              overallScore: generated.overallScore,
+              finalReport: generated,
+              readyForReport: true,
+              updatedAt: new Date().toISOString(),
+            }
+          : previous,
+      );
+
+      toast.success(
+        isRegenerate
+          ? "Final report regenerated successfully."
+          : "Final report generated successfully.",
+        { toastId: `final-report-${interviewId}` },
+      );
+    } catch (err) {
+      toast.error(
+        getFriendlyErrorMessage(
+          err,
+          "We couldn't generate your final report. Please try again in a moment.",
+        ),
+        {
+          toastId: `final-report-error-${interviewId}`,
+        },
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="mx-auto max-w-3xl">
-        <Card padding="lg">
-          <p className="text-[var(--text)]">Report not found.</p>
-          <Link href="/history" className="mt-4 inline-block">
-            <Button variant="secondary">Back to history</Button>
-          </Link>
-        </Card>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <LoadingState label="Loading interview report..." rows={6} />
       </div>
     );
   }
 
-  const verdict = verdictStyles[report.verdict];
+  if (error || !interview) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <ErrorState
+          title="Report not found"
+          message={error ?? "This interview could not be loaded."}
+        />
+        <Link href="/history" className="mt-4 inline-block cursor-pointer">
+          <Button variant="secondary">
+            <FiArrowLeft size={16} />
+            Back to History
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const reportExists = report !== null;
+  const completedWithoutReport =
+    interview.status === "completed" && !reportExists;
+  const canGenerate =
+    interview.readyForReport && !reportExists && !completedWithoutReport;
+
+  if (reportExists && report) {
+    return (
+      <div className="mx-auto max-w-5xl space-y-6 pb-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            variant="secondary"
+            className="w-full cursor-pointer sm:w-auto"
+            disabled={isGenerating}
+            onClick={() => void handleGenerateReport(true)}
+          >
+            <FiRotateCcw size={16} />
+            {isGenerating ? "Regenerating..." : "Regenerate Report"}
+          </Button>
+        </div>
+
+        <FinalReportView
+          interviewId={interviewId}
+          title={interview.title}
+          companyName={interview.companyName}
+          completedAt={interview.updatedAt}
+          report={report}
+        />
+      </div>
+    );
+  }
+
+  const interviewLabel = interview.companyName
+    ? `${interview.title} at ${interview.companyName}`
+    : interview.title;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <PageHeader
-        title="Interview Report"
-        description={`${report.jobTitle} at ${report.company}`}
-      />
+    <div className="mx-auto max-w-3xl space-y-6 pb-8">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+          Final interview report
+        </p>
+        <h1 className="text-2xl font-bold text-[var(--text)] sm:text-3xl">
+          {interview.title}
+        </h1>
+        {interview.companyName && (
+          <p className="text-base text-[var(--text-soft)]">
+            {interview.companyName}
+          </p>
+        )}
+      </div>
 
       <Card
         padding="lg"
-        className="border-[var(--primary-soft)] bg-gradient-to-br from-[var(--surface)] via-[var(--bg-soft)] to-[var(--surface-soft)]"
+        className="space-y-6 border-[var(--card-border)] bg-[var(--card)]"
       >
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-wide text-[var(--accent)]">
-              Overall score
-            </p>
-            <p className="mt-2 text-5xl font-bold text-[var(--text)]">
-              {report.overallScore}
-              <span className="text-2xl font-medium text-[var(--muted)]">
-                /100
+        {completedWithoutReport ? (
+          <>
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--warning-soft)] text-[var(--warning-text)]">
+                <FiFileText size={22} />
               </span>
-            </p>
-          </div>
-          <span
-            className={`inline-flex w-fit rounded-full px-4 py-2 text-sm font-semibold ${verdict.className}`}
-          >
-            {verdict.label}
-          </span>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-[var(--text)]">
+                  Report missing
+                </h2>
+                <p className="text-sm leading-relaxed text-[var(--text-soft)]">
+                  This interview is marked completed, but the final report is
+                  missing. Regenerate it to view your results for{" "}
+                  <span className="font-medium text-[var(--text)]">
+                    {interviewLabel}
+                  </span>
+                  .
+                </p>
+              </div>
+            </div>
+            <Button
+              disabled={isGenerating}
+              className="w-full cursor-pointer sm:w-auto"
+              onClick={() => void handleGenerateReport(true)}
+            >
+              <FiRotateCcw size={16} />
+              {isGenerating ? "Regenerating..." : "Regenerate Report"}
+            </Button>
+          </>
+        ) : canGenerate ? (
+          <>
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent-soft)] text-[var(--accent)]">
+                <FiFileText size={22} />
+              </span>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-[var(--text)]">
+                  Ready to generate
+                </h2>
+                <p className="text-sm leading-relaxed text-[var(--text-soft)]">
+                  All questions are answered for{" "}
+                  <span className="font-medium text-[var(--text)]">
+                    {interviewLabel}
+                  </span>
+                  . Generate your final report to see scores, strengths, and
+                  personalized recommendations.
+                </p>
+              </div>
+            </div>
+            <Button
+              disabled={isGenerating}
+              className="w-full cursor-pointer sm:w-auto"
+              onClick={() => void handleGenerateReport(false)}
+            >
+              <FiFileText size={16} />
+              {isGenerating ? "Generating..." : "Generate Report"}
+            </Button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-hover)] text-[var(--muted)]">
+                <FiLock size={22} />
+              </span>
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-[var(--text)]">
+                  Report locked
+                </h2>
+                <p className="text-sm leading-relaxed text-[var(--text-soft)]">
+                  Complete all questions to unlock your final report.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="w-full cursor-pointer sm:w-auto"
+              onClick={() => router.push(`/interview/${interviewId}`)}
+            >
+              <FiTarget size={16} />
+              Continue Interview
+            </Button>
+          </>
+        )}
+
+        <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:flex-wrap">
+          <Link href="/history" className="w-full cursor-pointer sm:w-auto">
+            <Button variant="secondary" className="w-full sm:w-auto">
+              <FiArrowLeft size={16} />
+              Back to History
+            </Button>
+          </Link>
+          <Link href="/start" className="w-full cursor-pointer sm:w-auto">
+            <Button variant="secondary" className="w-full sm:w-auto">
+              Start Another Interview
+            </Button>
+          </Link>
         </div>
       </Card>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ScoreCard label="Technical" score={report.technical} />
-        <ScoreCard label="Communication" score={report.communication} />
-        <ScoreCard label="Problem Solving" score={report.problemSolving} />
-        <ScoreCard label="Readiness" score={report.readiness} highlight />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card padding="lg" className="space-y-3">
-          <h3 className="text-lg font-semibold text-[var(--text)]">Strengths</h3>
-          <ul className="space-y-2">
-            {report.strengths.map((item) => (
-              <li
-                key={item}
-                className="text-sm text-[var(--text-soft)] before:mr-2 before:text-[var(--success)] before:content-['✓']"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card padding="lg" className="space-y-3">
-          <h3 className="text-lg font-semibold text-[var(--text)]">Weaknesses</h3>
-          <ul className="space-y-2">
-            {report.weaknesses.map((item) => (
-              <li
-                key={item}
-                className="text-sm text-[var(--text-soft)] before:mr-2 before:text-[var(--warning)] before:content-['•']"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card padding="lg" className="space-y-3">
-          <h3 className="text-lg font-semibold text-[var(--text)]">
-            Recommendations
-          </h3>
-          <ul className="space-y-2">
-            {report.recommendations.map((item) => (
-              <li
-                key={item}
-                className="text-sm text-[var(--text-soft)] before:mr-2 before:text-[var(--accent)] before:content-['→']"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Link href="/start">
-          <Button className="w-full sm:w-auto">
-            <FiRotateCcw size={16} />
-            Start another interview
-          </Button>
-        </Link>
-        <Link href="/history">
-          <Button variant="secondary" className="w-full sm:w-auto">
-            <FiArrowLeft size={16} />
-            Back to history
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }

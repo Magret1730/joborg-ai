@@ -4,6 +4,7 @@ import { generateInterviewSchema } from "../../lib/validation/generateInterview.
 import { validateBody } from "../../lib/validation/validate.js";
 import {
   deleteInterview,
+  generateFinalReport,
   generateInterview,
   getInterview,
   listInterviews,
@@ -23,6 +24,7 @@ interviewRoutes.post(
   validateBody(evaluateAnswerSchema),
   submitAnswer,
 );
+interviewRoutes.post("/:id/final-report", generateFinalReport);
 interviewRoutes.get("/:id", getInterview);
 interviewRoutes.delete("/:id", deleteInterview);
 

@@ -15,10 +15,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   return (
     <ErrorState
-      title="Unexpected error"
-      message={error.message || "An unexpected error occurred. Please try again."}
+      title="Something went wrong"
+      message="An unexpected error occurred. Please try again in a moment."
       onRetry={reset}
-      retryLabel="Try again"
+      retryLabel="Try Again"
     />
   );
 }

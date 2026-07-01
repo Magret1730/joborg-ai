@@ -3,16 +3,9 @@ import {
   FiArrowRight,
   FiBarChart2,
   FiCalendar,
-  FiChevronLeft,
-  FiChevronRight,
   FiClipboard,
   FiCpu,
-  FiGrid,
-  FiHelpCircle,
-  FiMic,
-  FiSend,
   FiStar,
-  FiZap,
 } from "react-icons/fi";
 import { PublicLayout } from "@/components/public/PublicLayout";
 import { Button } from "@/components/ui/Button";
@@ -84,13 +77,13 @@ export default function LandingPage() {
               readiness report.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/start">
+              <Link href="/start" className="cursor-pointer">
                 <Button className="w-full sm:w-auto">
                   Start Interview
                   <FiArrowRight size={16} />
                 </Button>
               </Link>
-              <Link href="/dashboard">
+              <Link href="/dashboard" className="cursor-pointer">
                 <Button variant="secondary" className="w-full sm:w-auto">
                   Go to Dashboard
                 </Button>
@@ -181,8 +174,8 @@ export default function LandingPage() {
                 monitoring — without copying descriptions manually.
               </p>
             </div>
-            <Link href="/dashboard" className="shrink-0">
-              <Button variant="secondary">Explore dashboard</Button>
+            <Link href="/dashboard" className="shrink-0 cursor-pointer">
+              <Button variant="secondary">Explore Dashboard</Button>
             </Link>
           </div>
         </Card>
@@ -198,13 +191,13 @@ export default function LandingPage() {
             in minutes.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/start">
+            <Link href="/start" className="cursor-pointer">
               <Button className="w-full sm:w-auto">
                 Start Interview
                 <FiArrowRight size={16} />
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/dashboard" className="cursor-pointer">
               <Button variant="secondary" className="w-full sm:w-auto">
                 Go to Dashboard
               </Button>

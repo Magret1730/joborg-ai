@@ -8,8 +8,6 @@ export type QuestionType =
   | "communication"
   | "system_design";
 
-export type InterviewVerdict = "ready" | "almost_ready" | "needs_practice";
-
 export interface InterviewQuestion {
   id: string;
   question: string;
@@ -59,6 +57,18 @@ export interface SubmitAnswerResponse {
   readyForReport: boolean;
 }
 
+export interface FinalReportResponse {
+  overallScore: number;
+  technicalScore: number;
+  communicationScore: number;
+  readinessScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  summary: string;
+  verdict: string;
+}
+
 export interface InterviewListItem {
   id: string;
   title: string;
@@ -81,7 +91,7 @@ export interface InterviewDetail {
   questions: InterviewQuestion[];
   status: InterviewStatus;
   overallScore: number | null;
-  finalReport: unknown | null;
+  finalReport: FinalReportResponse | null;
   answers: Answer[];
   createdAt: string;
   updatedAt: string;
@@ -103,43 +113,4 @@ export interface GenerateInterviewResponse {
   companyName: string;
   status: InterviewStatus;
   questions: InterviewQuestion[];
-}
-
-/** @deprecated Use InterviewListItem for API-backed lists */
-export interface InterviewSummary {
-  id: string;
-  jobTitle: string;
-  company: string;
-  score: number | null;
-  status: InterviewStatus;
-  date: string;
-}
-
-/** @deprecated Use AnswerFeedback for API-backed evaluation */
-export interface InterviewFeedback {
-  summary: string;
-  score: number;
-  tips: string[];
-}
-
-export interface InterviewReport {
-  id: string;
-  jobTitle: string;
-  company: string;
-  overallScore: number;
-  technical: number;
-  communication: number;
-  problemSolving: number;
-  readiness: number;
-  strengths: string[];
-  weaknesses: string[];
-  recommendations: string[];
-  verdict: InterviewVerdict;
-}
-
-export interface DashboardStats {
-  interviewsCompleted: number;
-  averageScore: number;
-  readinessScore: number;
-  lastInterview: string;
 }
