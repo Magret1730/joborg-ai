@@ -70,21 +70,17 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const completedInterviews = interviews.filter(
+  const inProgressInterviews = interviews.filter(
+    (interview) =>
+      interview.status === "in_progress" && !interview.readyForReport,
+  );
+  const readyForReportInterviews = interviews.filter(
+    (interview) =>
+      interview.readyForReport && interview.status !== "completed",
+  );
+  const completedReports = interviews.filter(
     (interview) => interview.status === "completed",
   );
-  const scoredInterviews = completedInterviews.filter(
-    (interview) => interview.overallScore !== null,
-  );
-  const averageScore =
-    scoredInterviews.length > 0
-      ? Math.round(
-          scoredInterviews.reduce(
-            (sum, interview) => sum + (interview.overallScore ?? 0),
-            0,
-          ) / scoredInterviews.length,
-        )
-      : 0;
   const recentInterviews = interviews.slice(0, 3);
   const lastInterview = interviews[0];
 
@@ -94,7 +90,7 @@ export default function DashboardPage() {
         title="Welcome back"
         description="Track your interview readiness, review recent sessions, and start a new practice round."
         action={
-          <Link href="/start">
+          <Link href="/start" className="cursor-pointer">
             <Button>
               Start Interview
               <FiArrowRight size={16} />
@@ -120,7 +116,7 @@ export default function DashboardPage() {
               feedback. Build confidence before the real interview.
             </p>
           </div>
-          <Link href="/start" className="shrink-0">
+          <Link href="/start" className="shrink-0 cursor-pointer">
             <Button className="w-full sm:w-auto">
               Start Interview
               <FiArrowRight size={16} />
@@ -137,17 +133,16 @@ export default function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total Interviews" value={interviews.length} />
           <StatCard
-            label="Interviews Completed"
-            value={completedInterviews.length}
+            label="In Progress"
+            value={inProgressInterviews.length}
           />
           <StatCard
-            label="Average Score"
-            value={scoredInterviews.length > 0 ? `${averageScore}%` : "—"}
+            label="Ready for Report"
+            value={readyForReportInterviews.length}
           />
           <StatCard
-            label="Last Interview"
-            value={lastInterview ? formatRelativeDate(lastInterview.createdAt) : "—"}
-            hint={lastInterview?.title}
+            label="Completed Reports"
+            value={completedReports.length}
           />
         </div>
       )}
@@ -162,7 +157,7 @@ export default function DashboardPage() {
               Your latest practice sessions
             </p>
           </div>
-          <Link href="/history">
+          <Link href="/history" className="cursor-pointer">
             <Button variant="secondary">View all</Button>
           </Link>
         </div>
@@ -184,6 +179,16 @@ export default function DashboardPage() {
           </Card>
         )}
       </section>
+
+      {!isLoading && lastInterview && (
+        <Card padding="md" className="text-sm text-[var(--muted)]">
+          Last interview:{" "}
+          <span className="font-medium text-[var(--text)]">
+            {lastInterview.title}
+          </span>{" "}
+          · {formatRelativeDate(lastInterview.createdAt)}
+        </Card>
+      )}
     </div>
   );
 }

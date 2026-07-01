@@ -3,6 +3,8 @@ import type {
   GenerateInterviewResponse,
   InterviewDetail,
   InterviewListItem,
+  SubmitAnswerPayload,
+  SubmitAnswerResponse,
 } from "@/types/interview";
 import { api } from "./api";
 
@@ -31,4 +33,16 @@ export const interviewService = {
 
   getById: (id: string) =>
     unwrap(api.get<ApiEnvelope<InterviewDetail>>(`/interviews/${id}`)),
+
+  submitAnswer: (interviewId: string, payload: SubmitAnswerPayload) =>
+    unwrap(
+      api.post<ApiEnvelope<SubmitAnswerResponse>>(
+        `/interviews/${interviewId}/answers`,
+        payload,
+      ),
+    ),
+
+  delete: async (id: string) => {
+    await api.delete<ApiEnvelope<unknown>>(`/interviews/${id}`);
+  },
 };

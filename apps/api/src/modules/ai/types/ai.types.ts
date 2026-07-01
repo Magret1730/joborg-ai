@@ -32,3 +32,19 @@ export const EXPECTED_QUESTION_COUNT = 5;
 
 export const questionTypeSchemaValues = Object.values(QUESTION_TYPES);
 export const questionDifficultySchemaValues = Object.values(QUESTION_DIFFICULTIES);
+
+export interface EvaluateAnswerPromptInput {
+  questionText: string;
+  questionType: string;
+  answerText: string;
+  goodAnswerHints?: string[];
+}
+
+export interface AnswerEvaluationResponse {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  improvedAnswer: string;
+  followUpQuestion: string;
+  shortFeedback: string;
+}

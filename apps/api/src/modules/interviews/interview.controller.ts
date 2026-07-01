@@ -46,3 +46,25 @@ export const getInterview = asyncHandler(async (req: Request, res: Response) => 
     data: interview,
   });
 });
+
+export const submitAnswer = asyncHandler(async (req: Request, res: Response) => {
+  const result = await interviewService.submitAnswer(
+    String(req.params.id),
+    req.body,
+  );
+
+  sendSuccess({
+    res,
+    message: API_MESSAGES.ANSWER_EVALUATED,
+    data: result,
+  });
+});
+
+export const deleteInterview = asyncHandler(async (req: Request, res: Response) => {
+  await interviewService.deleteInterview(String(req.params.id));
+
+  sendSuccess({
+    res,
+    message: API_MESSAGES.INTERVIEW_DELETED,
+  });
+});

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ReadyForReportSection } from "@/components/interviews/ReadyForReportSection";
 import { ReportsTable } from "@/components/interviews/ReportsTable";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -53,11 +54,16 @@ export default function ReportsPage() {
     };
   }, []);
 
-  const reports = interviews
-    .filter(
-      (interview) =>
-        interview.status === "completed" && interview.overallScore !== null,
-    )
+  const completedReports = interviews.filter(
+    (interview) => interview.status === "completed",
+  );
+  const readyForReportInterviews = interviews.filter(
+    (interview) =>
+      interview.readyForReport && interview.status !== "completed",
+  );
+
+  const reports = completedReports
+    .filter((interview) => interview.overallScore !== null)
     .map((interview) => ({
       id: interview.id,
       jobTitle: interview.title,
@@ -67,13 +73,16 @@ export default function ReportsPage() {
       date: interview.createdAt,
     }));
 
+  const hasContent =
+    reports.length > 0 || readyForReportInterviews.length > 0;
+
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <PageHeader
         title="Reports"
-        description="View all completed interview reports."
+        description="View completed interview reports and track interviews ready for final report generation."
         action={
-          <Link href="/start">
+          <Link href="/start" className="cursor-pointer">
             <Button>Start Interview</Button>
           </Link>
         }
@@ -83,8 +92,11 @@ export default function ReportsPage() {
         <LoadingState label="Loading reports..." rows={5} />
       ) : error ? (
         <ErrorState title="Could not load reports" message={error} />
-      ) : reports.length > 0 ? (
-        <ReportsTable reports={reports} />
+      ) : hasContent ? (
+        <div className="space-y-10">
+          {reports.length > 0 && <ReportsTable reports={reports} />}
+          <ReadyForReportSection interviews={readyForReportInterviews} />
+        </div>
       ) : (
         <EmptyState
           title="No reports yet"

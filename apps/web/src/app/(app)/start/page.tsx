@@ -56,7 +56,7 @@ export default function StartInterviewPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto max-w-8xl space-y-8">
       <PageHeader
         title="Start Interview"
         description="Add the role details below. Joborg AI will generate a tailored mock interview from your job description."

@@ -18,6 +18,47 @@ export interface InterviewQuestion {
   goodAnswerHints?: string[];
 }
 
+export interface AnswerFeedback {
+  strengths: string[];
+  weaknesses: string[];
+  improvedAnswer: string;
+  followUpQuestion: string;
+  shortFeedback: string;
+}
+
+export interface Answer {
+  id: string;
+  interviewId: string;
+  questionIndex: number;
+  questionText: string;
+  questionType: string;
+  answerText: string;
+  score: number | null;
+  feedback: AnswerFeedback | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubmitAnswerPayload {
+  questionIndex: number;
+  questionText: string;
+  questionType: string;
+  answerText: string;
+  goodAnswerHints?: string[];
+}
+
+export interface SubmitAnswerResponse {
+  questionIndex: number;
+  answerText: string;
+  score: number;
+  feedback: AnswerFeedback;
+  status: InterviewStatus;
+  questionCount: number;
+  answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
+}
+
 export interface InterviewListItem {
   id: string;
   title: string;
@@ -28,6 +69,8 @@ export interface InterviewListItem {
   updatedAt: string;
   questionCount: number;
   answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
 }
 
 export interface InterviewDetail {
@@ -39,9 +82,13 @@ export interface InterviewDetail {
   status: InterviewStatus;
   overallScore: number | null;
   finalReport: unknown | null;
-  answers: unknown[];
+  answers: Answer[];
   createdAt: string;
   updatedAt: string;
+  questionCount: number;
+  answeredCount: number;
+  progressPercentage: number;
+  readyForReport: boolean;
 }
 
 export interface GenerateInterviewInput {
@@ -68,6 +115,7 @@ export interface InterviewSummary {
   date: string;
 }
 
+/** @deprecated Use AnswerFeedback for API-backed evaluation */
 export interface InterviewFeedback {
   summary: string;
   score: number;
