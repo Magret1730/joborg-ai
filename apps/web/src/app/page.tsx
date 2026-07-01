@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  FiArrowRight,
   FiBarChart2,
   FiCalendar,
   FiClipboard,
@@ -8,6 +7,7 @@ import {
   FiStar,
 } from "react-icons/fi";
 import { PublicLayout } from "@/components/public/PublicLayout";
+import { LandingCTAs } from "@/components/public/LandingCTAs";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -76,19 +76,7 @@ export default function LandingPage() {
               Turn any job description into a personalized AI mock interview and
               readiness report.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/start" className="cursor-pointer">
-                <Button className="w-full sm:w-auto">
-                  Start Interview
-                  <FiArrowRight size={16} />
-                </Button>
-              </Link>
-              <Link href="/dashboard" className="cursor-pointer">
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  Go to Dashboard
-                </Button>
-              </Link>
-            </div>
+            <LandingCTAs layout="hero" />
           </div>
         </div>
       </section>
@@ -190,19 +178,7 @@ export default function LandingPage() {
             Start with any job description and get a personalized practice session
             in minutes.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/start" className="cursor-pointer">
-              <Button className="w-full sm:w-auto">
-                Start Interview
-                <FiArrowRight size={16} />
-              </Button>
-            </Link>
-            <Link href="/dashboard" className="cursor-pointer">
-              <Button variant="secondary" className="w-full sm:w-auto">
-                Go to Dashboard
-              </Button>
-            </Link>
-          </div>
+          <LandingCTAs layout="footer" />
         </div>
       </section>
     </PublicLayout>

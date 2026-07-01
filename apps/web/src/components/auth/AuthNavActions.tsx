@@ -39,7 +39,11 @@ export function AuthNavActions({
           </Button>
         </Link>
         {variant === "public" ? (
-          <Link href="/start" className="cursor-pointer" onClick={onNavigate}>
+          <Link
+            href="/auth/login?redirect=/start"
+            className="cursor-pointer"
+            onClick={onNavigate}
+          >
             <Button>Start Interview</Button>
           </Link>
         ) : (

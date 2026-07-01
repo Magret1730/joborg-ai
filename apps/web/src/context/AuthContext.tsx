@@ -67,11 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
+      const isAuthPage = window.location.pathname.startsWith("/auth/");
       clearAuth();
+
+      if (!isAuthPage) {
+        const redirect = encodeURIComponent(
+          `${window.location.pathname}${window.location.search}`,
+        );
+        router.push(`/auth/login?redirect=${redirect}`);
+        toast.error("Please log in to continue.", {
+          toastId: "auth-session-expired",
+        });
+      }
     });
 
     void refreshUser();
-  }, [clearAuth, refreshUser]);
+  }, [clearAuth, refreshUser, router]);
 
   const login = useCallback(
     async (payload: LoginPayload) => {

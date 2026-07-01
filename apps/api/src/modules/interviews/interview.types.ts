@@ -36,6 +36,7 @@ export interface CreateInterviewInput {
   jobDescription: string;
   questionsJson: InterviewQuestion[];
   interviewTitle: string;
+  userId: string;
 }
 
 export interface InterviewListItem {

@@ -101,7 +101,6 @@ export class InterviewRepository {
 
   async createInterview(input: CreateInterviewInput): Promise<InterviewRecord> {
     try {
-      // TODO(Auth): Set user_id from authenticated Joborg user.
       const [record] = await this.db("interviews")
         .insert({
           title: input.interviewTitle,
@@ -111,7 +110,7 @@ export class InterviewRepository {
             JSON.stringify(input.questionsJson),
           ]),
           status: INTERVIEW_STATUS.DRAFT,
-          user_id: null,
+          user_id: input.userId,
         })
         .returning("*");
 
@@ -124,12 +123,12 @@ export class InterviewRepository {
     }
   }
 
-  async findAllInterviews(): Promise<InterviewListItem[]> {
+  async findAllInterviews(userId: string): Promise<InterviewListItem[]> {
     try {
-      const records = await this.db<InterviewRecord>("interviews").select("*").orderBy(
-        "created_at",
-        "desc",
-      );
+      const records = await this.db<InterviewRecord>("interviews")
+        .where({ user_id: userId })
+        .select("*")
+        .orderBy("created_at", "desc");
 
       const interviewIds = records.map((record) => record.id);
 
@@ -165,10 +164,13 @@ export class InterviewRepository {
     }
   }
 
-  async findInterviewById(id: string): Promise<InterviewRecord | null> {
+  async findInterviewById(
+    id: string,
+    userId: string,
+  ): Promise<InterviewRecord | null> {
     try {
       const record = await this.db<InterviewRecord>("interviews")
-        .where({ id })
+        .where({ id, user_id: userId })
         .first();
 
       if (!record) {
@@ -306,13 +308,26 @@ export class InterviewRepository {
     }
   }
 
-  async deleteInterviewById(interviewId: string): Promise<boolean> {
+  async deleteInterviewById(
+    interviewId: string,
+    userId: string,
+  ): Promise<boolean> {
     try {
       let deleted = 0;
 
       await this.db.transaction(async (trx) => {
+        const interview = await trx<InterviewRecord>("interviews")
+          .where({ id: interviewId, user_id: userId })
+          .first();
+
+        if (!interview) {
+          return;
+        }
+
         await trx("answers").where({ interview_id: interviewId }).del();
-        deleted = await trx("interviews").where({ id: interviewId }).del();
+        deleted = await trx("interviews")
+          .where({ id: interviewId, user_id: userId })
+          .del();
       });
 
       return deleted > 0;

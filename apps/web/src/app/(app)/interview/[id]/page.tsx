@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
 import type {
   AnswerFeedback,
   InterviewDetail,
@@ -126,12 +127,14 @@ export default function InterviewPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(
-            getFriendlyErrorMessage(
-              err,
-              "We couldn't load this interview. Please try again in a moment.",
-            ),
-          );
+          const message =
+            err instanceof ApiError && err.status === 404
+              ? "This interview could not be found. It may have been deleted."
+              : getFriendlyErrorMessage(
+                  err,
+                  "We couldn't load this interview. Please try again in a moment.",
+                );
+          setError(message);
         }
       } finally {
         if (isMounted) {

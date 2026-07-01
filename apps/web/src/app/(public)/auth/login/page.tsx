@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@heroui/react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { Spinner } from "@/components/ui/Spinner";
 
-export default function LoginPage() {
+function getRedirectPath(searchParams: URLSearchParams): string {
+  const redirect = searchParams.get("redirect");
+
+  if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+    return redirect;
+  }
+
+  return "/dashboard";
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +45,7 @@ export default function LoginPage() {
         email: email.trim(),
         password,
       });
-      router.push("/dashboard");
+      router.push(getRedirectPath(searchParams));
     } catch {
       // Error toast is handled in AuthContext.
     } finally {
@@ -124,5 +136,19 @@ export default function LoginPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto flex min-h-[calc(100vh-12rem)] max-w-md items-center px-4 py-12 sm:px-6">
+          <LoadingState label="Loading login..." rows={4} />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
