@@ -36,7 +36,7 @@ export function QuestionNavigator({
               onClick={() => onSelect(index)}
               aria-label={`Go to question ${index + 1}`}
               aria-current={isActive ? "step" : undefined}
-              className={`flex h-9 min-w-9 items-center justify-center rounded-[var(--radius-md)] border px-3 text-sm font-medium transition ${
+              className={`flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border px-3 text-sm font-medium transition disabled:cursor-not-allowed ${
                 isActive
                   ? "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary)]"
                   : isAnswered

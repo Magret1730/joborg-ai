@@ -46,3 +46,16 @@ export const getInterview = asyncHandler(async (req: Request, res: Response) => 
     data: interview,
   });
 });
+
+export const submitAnswer = asyncHandler(async (req: Request, res: Response) => {
+  const result = await interviewService.submitAnswer(
+    String(req.params.id),
+    req.body,
+  );
+
+  sendSuccess({
+    res,
+    message: API_MESSAGES.ANSWER_EVALUATED,
+    data: result,
+  });
+});

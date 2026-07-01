@@ -7,6 +7,7 @@ import { FiArrowLeft, FiPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AnswerForm } from "@/components/interviews/AnswerForm";
+import { FeedbackCard } from "@/components/interviews/FeedbackCard";
 import { InterviewSessionSidebar } from "@/components/interviews/InterviewSessionSidebar";
 import { QuestionCard } from "@/components/interviews/QuestionCard";
 import { QuestionNavigator } from "@/components/interviews/QuestionNavigator";
@@ -15,7 +16,11 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { interviewService } from "@/services/interviews";
 import { ApiError } from "@/services/api";
-import type { InterviewDetail } from "@/types/interview";
+import type {
+  AnswerFeedback,
+  InterviewDetail,
+  SubmitAnswerResponse,
+} from "@/types/interview";
 
 const statusLabels: Record<string, string> = {
   draft: "Draft",
@@ -23,12 +28,67 @@ const statusLabels: Record<string, string> = {
   completed: "Completed",
 };
 
-function getProgressPercent(currentIndex: number, totalQuestions: number) {
+type SavedAnswerState = {
+  answerText: string;
+  score: number;
+  feedback: AnswerFeedback;
+};
+
+function getSessionProgressPercent(
+  currentIndex: number,
+  totalQuestions: number,
+) {
   if (totalQuestions === 0) {
     return 0;
   }
 
   return Math.round(((currentIndex + 1) / totalQuestions) * 100);
+}
+
+function getAnsweredProgressPercent(
+  answeredCount: number,
+  totalQuestions: number,
+) {
+  if (totalQuestions === 0) {
+    return 0;
+  }
+
+  return Math.round((answeredCount / totalQuestions) * 100);
+}
+
+function isAnswerFeedback(value: unknown): value is AnswerFeedback {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const feedback = value as Record<string, unknown>;
+
+  return (
+    Array.isArray(feedback.strengths) &&
+    Array.isArray(feedback.weaknesses) &&
+    typeof feedback.improvedAnswer === "string" &&
+    typeof feedback.followUpQuestion === "string" &&
+    typeof feedback.shortFeedback === "string"
+  );
+}
+
+function hydrateFromInterview(interview: InterviewDetail) {
+  const draftAnswers: Record<number, string> = {};
+  const savedAnswers: Record<number, SavedAnswerState> = {};
+
+  for (const answer of interview.answers) {
+    draftAnswers[answer.questionIndex] = answer.answerText;
+
+    if (answer.score !== null && isAnswerFeedback(answer.feedback)) {
+      savedAnswers[answer.questionIndex] = {
+        answerText: answer.answerText,
+        score: answer.score,
+        feedback: answer.feedback,
+      };
+    }
+  }
+
+  return { draftAnswers, savedAnswers };
 }
 
 export default function InterviewPage() {
@@ -40,6 +100,10 @@ export default function InterviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [draftAnswers, setDraftAnswers] = useState<Record<number, string>>({});
+  const [savedAnswers, setSavedAnswers] = useState<
+    Record<number, SavedAnswerState>
+  >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,7 +116,10 @@ export default function InterviewPage() {
         const data = await interviewService.getById(interviewId);
 
         if (isMounted) {
+          const hydrated = hydrateFromInterview(data);
           setInterview(data);
+          setDraftAnswers(hydrated.draftAnswers);
+          setSavedAnswers(hydrated.savedAnswers);
         }
       } catch (err) {
         if (isMounted) {
@@ -81,17 +148,25 @@ export default function InterviewPage() {
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentIndex];
   const currentAnswer = draftAnswers[currentIndex] ?? "";
+  const currentSavedAnswer = savedAnswers[currentIndex];
 
   const answeredIndexes = useMemo(() => {
     return new Set(
-      Object.entries(draftAnswers)
-        .filter(([, answer]) => answer.trim().length > 0)
-        .map(([index]) => Number(index)),
+      Object.keys(savedAnswers).map((index) => Number(index)),
     );
-  }, [draftAnswers]);
+  }, [savedAnswers]);
 
   const answeredCount = answeredIndexes.size;
-  const progressPercent = getProgressPercent(currentIndex, totalQuestions);
+  const allQuestionsAnswered =
+    totalQuestions > 0 && answeredCount === totalQuestions;
+  const sessionProgressPercent = getSessionProgressPercent(
+    currentIndex,
+    totalQuestions,
+  );
+  const answeredProgressPercent = getAnsweredProgressPercent(
+    answeredCount,
+    totalQuestions,
+  );
 
   const updateAnswer = (value: string) => {
     setDraftAnswers((previous) => ({
@@ -107,8 +182,55 @@ export default function InterviewPage() {
     }));
   };
 
-  const handleSubmitAnswer = () => {
-    toast.info("Answer evaluation is coming in the next task.");
+  const handleSubmitAnswer = async () => {
+    if (!interview || !currentQuestion || !currentAnswer.trim()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result: SubmitAnswerResponse = await interviewService.submitAnswer(
+        interviewId,
+        {
+          questionIndex: currentIndex,
+          questionText: currentQuestion.question,
+          questionType: currentQuestion.type,
+          answerText: currentAnswer.trim(),
+          goodAnswerHints: currentQuestion.goodAnswerHints,
+        },
+      );
+
+      setSavedAnswers((previous) => ({
+        ...previous,
+        [currentIndex]: {
+          answerText: result.answerText,
+          score: result.score,
+          feedback: result.feedback,
+        },
+      }));
+
+      if (interview.status === "draft") {
+        setInterview((previous) =>
+          previous ? { ...previous, status: "in_progress" } : previous,
+        );
+      }
+
+      toast.success("Answer evaluated successfully!");
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Failed to evaluate answer. Please try again.";
+
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateReport = () => {
+    toast.info("Final report generation is coming in the next task.");
   };
 
   const goToQuestion = (index: number) => {
@@ -160,13 +282,13 @@ export default function InterviewPage() {
         description={`${interview.companyName ?? "Company"} · ${statusLabels[interview.status] ?? interview.status} · ${totalQuestions} questions`}
         action={
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Link href="/history">
+            <Link href="/history" className="cursor-pointer">
               <Button variant="secondary" className="w-full sm:w-auto">
                 <FiArrowLeft size={16} />
                 Back to History
               </Button>
             </Link>
-            <Link href="/start">
+            <Link href="/start" className="cursor-pointer">
               <Button className="w-full sm:w-auto">
                 <FiPlus size={16} />
                 Start New Interview
@@ -185,15 +307,23 @@ export default function InterviewPage() {
             difficulty={currentQuestion.difficulty}
             question={currentQuestion.question}
             goodAnswerHints={currentQuestion.goodAnswerHints}
-            progressPercent={progressPercent}
+            progressPercent={sessionProgressPercent}
           />
 
           <AnswerForm
             value={currentAnswer}
             onChange={updateAnswer}
             onClear={clearAnswer}
-            onSubmit={handleSubmitAnswer}
+            onSubmit={() => void handleSubmitAnswer()}
+            isSubmitting={isSubmitting}
           />
+
+          {currentSavedAnswer && (
+            <FeedbackCard
+              score={currentSavedAnswer.score}
+              feedback={currentSavedAnswer.feedback}
+            />
+          )}
 
           <QuestionNavigator
             totalQuestions={totalQuestions}
@@ -212,7 +342,9 @@ export default function InterviewPage() {
           totalQuestions={totalQuestions}
           answeredCount={answeredCount}
           currentQuestionNumber={currentIndex + 1}
-          progressPercent={progressPercent}
+          progressPercent={answeredProgressPercent}
+          allQuestionsAnswered={allQuestionsAnswered}
+          onGenerateReport={handleGenerateReport}
         />
       </div>
     </div>

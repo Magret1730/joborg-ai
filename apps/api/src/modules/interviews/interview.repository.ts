@@ -10,6 +10,7 @@ import type {
   InterviewDetail,
   InterviewListItem,
   InterviewRecord,
+  UpsertAnswerInput,
 } from "./interview.types.js";
 
 function toIsoString(value: Date | string): string {
@@ -17,6 +18,11 @@ function toIsoString(value: Date | string): string {
 }
 
 function mapAnswer(record: AnswerRecord): InterviewAnswer {
+  const feedback =
+    typeof record.feedback_json === "string"
+      ? JSON.parse(record.feedback_json)
+      : record.feedback_json;
+
   return {
     id: record.id,
     interviewId: record.interview_id,
@@ -25,7 +31,7 @@ function mapAnswer(record: AnswerRecord): InterviewAnswer {
     questionType: record.question_type,
     answerText: record.answer_text,
     score: record.score,
-    feedback: record.feedback_json,
+    feedback,
     createdAt: toIsoString(record.created_at),
     updatedAt: toIsoString(record.updated_at),
   };
@@ -174,6 +180,92 @@ export class InterviewRepository {
       return this.db<AnswerRecord>("answers")
         .where({ interview_id: interviewId })
         .orderBy("question_index", "asc");
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
+  async findAnswerByInterviewAndQuestionIndex(
+    interviewId: string,
+    questionIndex: number,
+  ): Promise<AnswerRecord | null> {
+    try {
+      const record = await this.db<AnswerRecord>("answers")
+        .where({
+          interview_id: interviewId,
+          question_index: questionIndex,
+        })
+        .first();
+
+      return record ?? null;
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
+  async countAnswersByInterviewId(interviewId: string): Promise<number> {
+    try {
+      const result = await this.db("answers")
+        .where({ interview_id: interviewId })
+        .count("* as count")
+        .first();
+
+      return Number(result?.count ?? 0);
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
+  async upsertAnswer(input: UpsertAnswerInput): Promise<AnswerRecord> {
+    try {
+      const feedbackJson = this.db.raw("?::jsonb", [
+        JSON.stringify(input.feedback),
+      ]);
+
+      const [record] = await this.db<AnswerRecord>("answers")
+        .insert({
+          interview_id: input.interviewId,
+          question_index: input.questionIndex,
+          question_text: input.questionText,
+          question_type: input.questionType,
+          answer_text: input.answerText,
+          score: input.score,
+          feedback_json: feedbackJson,
+        })
+        .onConflict(["interview_id", "question_index"])
+        .merge({
+          question_text: input.questionText,
+          question_type: input.questionType,
+          answer_text: input.answerText,
+          score: input.score,
+          feedback_json: feedbackJson,
+          updated_at: this.db.fn.now(),
+        })
+        .returning("*");
+
+      return {
+        ...record,
+        feedback_json:
+          typeof record.feedback_json === "string"
+            ? JSON.parse(record.feedback_json)
+            : record.feedback_json,
+      };
+    } catch {
+      throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
+    }
+  }
+
+  async updateInterviewStatus(
+    interviewId: string,
+    status: string,
+  ): Promise<void> {
+    try {
+      await this.db("interviews")
+        .where({ id: interviewId })
+        .update({
+          status,
+          updated_at: this.db.fn.now(),
+        });
     } catch {
       throw new AppError(API_MESSAGES.DATABASE_ERROR, 500);
     }

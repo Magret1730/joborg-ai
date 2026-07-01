@@ -84,3 +84,28 @@ export interface GeneratedInterviewResult {
   status: InterviewStatus;
   questions: InterviewQuestion[];
 }
+
+export interface AnswerFeedback {
+  strengths: string[];
+  weaknesses: string[];
+  improvedAnswer: string;
+  followUpQuestion: string;
+  shortFeedback: string;
+}
+
+export interface UpsertAnswerInput {
+  interviewId: string;
+  questionIndex: number;
+  questionText: string;
+  questionType: string;
+  answerText: string;
+  score: number;
+  feedback: AnswerFeedback;
+}
+
+export interface SubmitAnswerResult {
+  questionIndex: number;
+  answerText: string;
+  score: number;
+  feedback: AnswerFeedback;
+}

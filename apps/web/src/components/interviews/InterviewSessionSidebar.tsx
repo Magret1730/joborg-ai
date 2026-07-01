@@ -1,4 +1,4 @@
-import { FiFileText, FiLock } from "react-icons/fi";
+import { FiFileText, FiLock, FiUnlock } from "react-icons/fi";
 import type { InterviewStatus } from "@/types/interview";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -23,6 +23,8 @@ type InterviewSessionSidebarProps = {
   answeredCount: number;
   currentQuestionNumber: number;
   progressPercent: number;
+  allQuestionsAnswered: boolean;
+  onGenerateReport: () => void;
 };
 
 export function InterviewSessionSidebar({
@@ -33,6 +35,8 @@ export function InterviewSessionSidebar({
   answeredCount,
   currentQuestionNumber,
   progressPercent,
+  allQuestionsAnswered,
+  onGenerateReport,
 }: InterviewSessionSidebarProps) {
   return (
     <Card padding="lg" className="space-y-6 lg:sticky lg:top-6">
@@ -84,13 +88,23 @@ export function InterviewSessionSidebar({
 
       <div className="space-y-3 border-t border-[var(--border)] pt-5">
         <div className="flex items-start gap-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg-soft)] p-4">
-          <FiLock size={18} className="mt-0.5 shrink-0 text-[var(--muted)]" />
+          {allQuestionsAnswered ? (
+            <FiUnlock size={18} className="mt-0.5 shrink-0 text-[var(--accent)]" />
+          ) : (
+            <FiLock size={18} className="mt-0.5 shrink-0 text-[var(--muted)]" />
+          )}
           <p className="text-sm leading-relaxed text-[var(--text-soft)]">
-            Complete all questions to unlock your final report.
+            {allQuestionsAnswered
+              ? "All questions answered. You can generate your final report once report generation is available."
+              : "Complete all questions to unlock your final report."}
           </p>
         </div>
 
-        <Button disabled className="w-full">
+        <Button
+          disabled={!allQuestionsAnswered}
+          onClick={onGenerateReport}
+          className="w-full"
+        >
           <FiFileText size={16} />
           Generate Report
         </Button>

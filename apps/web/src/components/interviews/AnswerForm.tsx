@@ -2,15 +2,23 @@ import { FiRotateCcw, FiSend } from "react-icons/fi";
 import { TextArea } from "@heroui/react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Spinner } from "@/components/ui/Spinner";
 
 type AnswerFormProps = {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 };
 
-export function AnswerForm({ value, onChange, onClear, onSubmit }: AnswerFormProps) {
+export function AnswerForm({
+  value,
+  onChange,
+  onClear,
+  onSubmit,
+  isSubmitting = false,
+}: AnswerFormProps) {
   const characterCount = value.length;
 
   return (
@@ -30,13 +38,14 @@ export function AnswerForm({ value, onChange, onClear, onSubmit }: AnswerFormPro
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="min-h-48 text-base leading-relaxed"
+        disabled={isSubmitting}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
         <Button
           variant="ghost"
           onClick={onClear}
-          disabled={!value}
+          disabled={!value || isSubmitting}
           className="w-full sm:w-auto"
         >
           <FiRotateCcw size={16} />
@@ -45,11 +54,20 @@ export function AnswerForm({ value, onChange, onClear, onSubmit }: AnswerFormPro
         <Button
           variant="secondary"
           onClick={onSubmit}
-          disabled={!value.trim()}
+          disabled={!value.trim() || isSubmitting}
           className="w-full sm:w-auto"
         >
-          <FiSend size={16} />
-          Submit Answer
+          {isSubmitting ? (
+            <>
+              <Spinner size="sm" />
+              Evaluating...
+            </>
+          ) : (
+            <>
+              <FiSend size={16} />
+              Submit Answer
+            </>
+          )}
         </Button>
       </div>
     </Card>
