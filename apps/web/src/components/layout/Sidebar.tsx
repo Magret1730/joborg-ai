@@ -21,7 +21,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <AppLogo />
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-5">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isNavItemActive(pathname, item);
@@ -44,7 +44,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <div className="border-t border-[var(--border)] p-4">
+      <div className="mt-auto border-t border-[var(--border)] p-4">
         {isAuthenticated && user ? (
           <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-3">
             <div className="flex items-center gap-3">
@@ -58,7 +58,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 </p>
               </div>
             </div>
-            <div className="mt-3">
+            <div className="mt-2.5">
               <PlanBadge plan={user.plan} />
             </div>
           </div>
