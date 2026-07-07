@@ -13,7 +13,7 @@ function requireEnv(key: string, fallback?: string): string {
 }
 
 export const env = {
-  port: Number(process.env.PORT ?? 5001),
+  port: Number(process.env.PORT ?? 5051),
   nodeEnv: process.env.NODE_ENV ?? "development",
   clientUrl: requireEnv("CLIENT_URL", "http://localhost:3000"),
   databaseUrl: process.env.DATABASE_URL,

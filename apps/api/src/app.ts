@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { env } from "./config/env.js";
+import { getCorsOptions } from "./config/cors.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { requestLogger } from "./middleware/requestLogger.js";
@@ -10,11 +10,7 @@ import interviewRoutes from "./modules/interviews/interview.routes.js";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: env.clientUrl,
-  }),
-);
+app.use(cors(getCorsOptions()));
 app.use(express.json());
 app.use(requestLogger);
 
