@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
-import { getSiteUrl, siteConfig } from "@/lib/site";
+import { getSiteUrl, getSocialImagePath, siteConfig } from "@/lib/site";
 
 const siteUrl = getSiteUrl();
-const ogImageUrl = new URL(siteConfig.ogImagePath, siteUrl).toString();
+const socialImagePath = getSocialImagePath();
+const socialImageUrl = new URL(socialImagePath, siteUrl).toString();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -14,6 +15,14 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  keywords: [...siteConfig.keywords],
+  authors: [{ name: siteConfig.creator }],
+  creator: siteConfig.creator,
+  icons: {
+    icon: siteConfig.iconPath,
+    shortcut: siteConfig.iconPath,
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     url: siteUrl,
@@ -22,9 +31,9 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [
       {
-        url: siteConfig.ogImagePath,
-        width: 1200,
-        height: 630,
+        url: socialImagePath,
+        width: socialImagePath === siteConfig.ogImagePath ? 1200 : 512,
+        height: socialImagePath === siteConfig.ogImagePath ? 630 : 512,
         alt: "Joborg AI — AI Interview Coach",
       },
     ],
@@ -33,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.title,
     description: siteConfig.description,
-    images: [ogImageUrl],
+    images: [socialImageUrl],
   },
 };
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FiStar } from "react-icons/fi";
+import { BrandIcon } from "@/components/brand/BrandIcon";
 
 type PageHeaderProps = {
   title: string;
@@ -31,9 +32,7 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
 export function AppLogo({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-sm font-bold text-white">
-        JA
-      </div>
+      <BrandIcon size={40} priority />
       {!compact && (
         <div>
           <p className="text-sm font-semibold text-[var(--text)]">Joborg AI</p>
