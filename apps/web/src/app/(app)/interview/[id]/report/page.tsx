@@ -19,6 +19,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { parseFinalReport } from "@/lib/finalReport";
 import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
 import type { FinalReportResponse, InterviewDetail } from "@/types/interview";
 
 export default function ReportPage() {
@@ -41,12 +42,14 @@ export default function ReportPage() {
       setInterview(data);
       setReport(parseFinalReport(data.finalReport));
     } catch (err) {
-      setError(
-        getFriendlyErrorMessage(
-          err,
-          "We couldn't load this report. Please try again in a moment.",
-        ),
-      );
+      const message =
+        err instanceof ApiError && err.status === 404
+          ? "This interview could not be found. It may have been deleted."
+          : getFriendlyErrorMessage(
+              err,
+              "We couldn't load this report. Please try again in a moment.",
+            );
+      setError(message);
       setInterview(null);
       setReport(null);
     } finally {
@@ -110,7 +113,7 @@ export default function ReportPage() {
     return (
       <div className="mx-auto max-w-3xl">
         <ErrorState
-          title="Report not found"
+          title="Interview not found"
           message={error ?? "This interview could not be loaded."}
         />
         <Link href="/history" className="mt-4 inline-block cursor-pointer">

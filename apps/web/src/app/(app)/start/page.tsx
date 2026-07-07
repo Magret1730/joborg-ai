@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { exampleJobDescription } from "@/constants/exampleJobDescription";
 import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { interviewService } from "@/services/interviews";
+import { ApiError } from "@/services/api";
 
 export default function StartInterviewPage() {
   const router = useRouter();
@@ -38,12 +39,20 @@ export default function StartInterviewPage() {
       toast.success("Interview created successfully!");
       router.push(`/interview/${result.interviewId}`);
     } catch (error) {
-      toast.error(
-        getFriendlyErrorMessage(
-          error,
-          "We couldn't generate your interview. Please try again in a moment.",
-        ),
-      );
+      const message =
+        error instanceof ApiError && error.status === 429
+          ? error.message
+          : getFriendlyErrorMessage(
+              error,
+              "We couldn't generate your interview. Please try again in a moment.",
+            );
+
+      toast.error(message, {
+        toastId:
+          error instanceof ApiError && error.status === 429
+            ? "interview-limit-reached"
+            : "interview-generate-error",
+      });
     } finally {
       setIsGenerating(false);
     }

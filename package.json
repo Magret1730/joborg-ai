@@ -6,6 +6,10 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
   "scripts": {
     "dev:web": "npm run dev --workspace=@joborg-ai/web",
     "dev:api": "npm run dev --workspace=@joborg-ai/api",

@@ -16,4 +16,13 @@ export const API_MESSAGES = {
   INTERVIEW_NOT_READY_FOR_REPORT:
     "All questions must be answered before generating a final report",
   NOT_IMPLEMENTED: "Not implemented yet",
+  ACCOUNT_CREATED: "Account created successfully",
+  LOGGED_IN: "Logged in successfully",
+  LOGGED_OUT: "Logged out successfully",
+  USER_RETRIEVED: "User retrieved successfully",
+  EMAIL_ALREADY_IN_USE: "An account with this email already exists",
+  INVALID_CREDENTIALS: "Invalid email or password",
+  UNAUTHORIZED: "Authentication required",
+  INVALID_TOKEN: "Invalid or expired token",
+  JWT_NOT_CONFIGURED: "Authentication is not configured on the server",
 } as const;

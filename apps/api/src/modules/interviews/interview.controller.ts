@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { API_MESSAGES } from "../../constants/apiMessages.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { AppError } from "../../utils/AppError.js";
 import { sendSuccess } from "../../utils/sendResponse.js";
 import { AiService } from "../ai/ai.service.js";
 import { InterviewService } from "./interview.service.js";
@@ -8,12 +9,21 @@ import { InterviewService } from "./interview.service.js";
 const interviewService = new InterviewService();
 const aiService = new AiService();
 
+function getAuthenticatedUserId(req: Request): string {
+  if (!req.user?.id) {
+    throw new AppError(API_MESSAGES.UNAUTHORIZED, 401);
+  }
+
+  return req.user.id;
+}
+
 export const generateInterview = asyncHandler(
   async (req: Request, res: Response) => {
-    // TODO(Auth): Associate interview with authenticated Joborg user.
-    // TODO(Pricing): Enforce plan limits before calling Gemini.
+    const userId = getAuthenticatedUserId(req);
+
     const generated = await aiService.generateInterviewQuestions(req.body);
     const result = await interviewService.createInterviewFromGeneration(
+      userId,
       req.body,
       generated,
     );
@@ -27,20 +37,23 @@ export const generateInterview = asyncHandler(
   },
 );
 
-export const listInterviews = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const interviews = await interviewService.listInterviews();
+export const listInterviews = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getAuthenticatedUserId(req);
+  const interviews = await interviewService.listInterviews(userId);
 
-    sendSuccess({
-      res,
-      message: "Interviews retrieved successfully",
-      data: interviews,
-    });
-  },
-);
+  sendSuccess({
+    res,
+    message: "Interviews retrieved successfully",
+    data: interviews,
+  });
+});
 
 export const getInterview = asyncHandler(async (req: Request, res: Response) => {
-  const interview = await interviewService.getInterviewById(String(req.params.id));
+  const userId = getAuthenticatedUserId(req);
+  const interview = await interviewService.getInterviewById(
+    String(req.params.id),
+    userId,
+  );
 
   sendSuccess({
     res,
@@ -50,8 +63,11 @@ export const getInterview = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const submitAnswer = asyncHandler(async (req: Request, res: Response) => {
-  // TODO(Pricing): Limit re-evaluations based on subscription plan.
+  const userId = getAuthenticatedUserId(req);
+
+  // TODO(Pricing): Limit answer evaluations per plan before calling Gemini.
   const result = await interviewService.submitAnswer(
+    userId,
     String(req.params.id),
     req.body,
   );
@@ -64,7 +80,8 @@ export const submitAnswer = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const deleteInterview = asyncHandler(async (req: Request, res: Response) => {
-  await interviewService.deleteInterview(String(req.params.id));
+  const userId = getAuthenticatedUserId(req);
+  await interviewService.deleteInterview(userId, String(req.params.id));
 
   sendSuccess({
     res,
@@ -74,8 +91,11 @@ export const deleteInterview = asyncHandler(async (req: Request, res: Response) 
 
 export const generateFinalReport = asyncHandler(
   async (req: Request, res: Response) => {
-    // TODO(Pricing): Premium users can regenerate reports.
+    const userId = getAuthenticatedUserId(req);
+
+    // TODO(Pricing): Limit final report generation/regeneration per plan before calling Gemini.
     const report = await interviewService.generateFinalReport(
+      userId,
       String(req.params.id),
     );
 

@@ -13,6 +13,7 @@ import type {
   GeneratedInterviewResult,
   InterviewDetail,
   InterviewListItem,
+  InterviewRecord,
   SubmitAnswerResult,
 } from "./interview.types.js";
 
@@ -22,7 +23,24 @@ export class InterviewService {
     private readonly aiService = new AiService(),
   ) {}
 
+  private async getOwnedInterviewOrThrow(
+    interviewId: string,
+    userId: string,
+  ): Promise<InterviewRecord> {
+    const interview = await this.repository.findInterviewById(
+      interviewId,
+      userId,
+    );
+
+    if (!interview) {
+      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
+    }
+
+    return interview;
+  }
+
   async createInterviewFromGeneration(
+    userId: string,
     input: GenerateInterviewInput,
     generated: InterviewGenerationResponse,
   ): Promise<GeneratedInterviewResult> {
@@ -32,6 +50,7 @@ export class InterviewService {
       jobDescription: input.jobDescription,
       interviewTitle: generated.interviewTitle,
       questionsJson: generated.questions,
+      userId,
     });
 
     return {
@@ -43,33 +62,28 @@ export class InterviewService {
     };
   }
 
-  async listInterviews(): Promise<InterviewListItem[]> {
-    return this.repository.findAllInterviews();
+  async listInterviews(userId: string): Promise<InterviewListItem[]> {
+    return this.repository.findAllInterviews(userId);
   }
 
-  async getInterviewById(id: string): Promise<InterviewDetail> {
-    const record = await this.repository.findInterviewById(id);
-
-    if (!record) {
-      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
-    }
-
+  async getInterviewById(
+    id: string,
+    userId: string,
+  ): Promise<InterviewDetail> {
+    const record = await this.getOwnedInterviewOrThrow(id, userId);
     const answers = await this.repository.findAnswersByInterviewId(id);
 
     return this.repository.mapInterviewDetail(record, answers);
   }
 
   async submitAnswer(
+    userId: string,
     interviewId: string,
     payload: EvaluateAnswerInput,
   ): Promise<SubmitAnswerResult> {
-    const interview = await this.repository.findInterviewById(interviewId);
+    const interview = await this.getOwnedInterviewOrThrow(interviewId, userId);
 
-    if (!interview) {
-      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
-    }
-
-    // TODO(Pricing): Enforce evaluation limits before calling Gemini.
+    // TODO(Pricing): Limit answer evaluations per plan before calling Gemini.
     const evaluation = await this.aiService.evaluateAnswer(payload);
 
     await this.repository.upsertAnswer({
@@ -103,21 +117,19 @@ export class InterviewService {
     };
   }
 
-  async deleteInterview(id: string): Promise<void> {
-    const deleted = await this.repository.deleteInterviewById(id);
+  async deleteInterview(userId: string, id: string): Promise<void> {
+    const deleted = await this.repository.deleteInterviewById(id, userId);
 
     if (!deleted) {
       throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
     }
   }
 
-  async generateFinalReport(interviewId: string): Promise<FinalReportResult> {
-    const interview = await this.repository.findInterviewById(interviewId);
-
-    if (!interview) {
-      throw new AppError(API_MESSAGES.INTERVIEW_NOT_FOUND, 404);
-    }
-
+  async generateFinalReport(
+    userId: string,
+    interviewId: string,
+  ): Promise<FinalReportResult> {
+    const interview = await this.getOwnedInterviewOrThrow(interviewId, userId);
     const answers = await this.repository.findAnswersByInterviewId(interviewId);
     const questionCount = interview.questions_json.length;
 
@@ -125,7 +137,7 @@ export class InterviewService {
       throw new AppError(API_MESSAGES.INTERVIEW_NOT_READY_FOR_REPORT, 400);
     }
 
-    // TODO(Pricing): Enforce report generation limits before calling Gemini.
+    // TODO(Pricing): Limit final report generation/regeneration per plan before calling Gemini.
     const report = await this.aiService.generateFinalReport({
       interviewTitle: interview.title,
       companyName: interview.company_name ?? "Unknown Company",
